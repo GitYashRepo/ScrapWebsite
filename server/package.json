@@ -1,0 +1,36 @@
+{
+  "name": "teamcollabtool",
+  "version": "1.0.0",
+  "description": "A project where users can register, create tasks, assign them to other users, and collaborate via comments.",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GitYashRepo/TeamCollabTool.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GitYashRepo/TeamCollabTool/issues"
+  },
+  "homepage": "https://github.com/GitYashRepo/TeamCollabTool#readme",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^4.21.2",
+    "express-session": "^1.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.18.0",
+    "mongoose": "^8.17.1",
+    "nodemon": "^3.1.10",
+    "path": "^0.12.7"
+  }
+}
