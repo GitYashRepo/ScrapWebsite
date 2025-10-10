@@ -1,7 +1,5 @@
 
 
-
-
 const aboutPage = () => {
     return (
         <div>
