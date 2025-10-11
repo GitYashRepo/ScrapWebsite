@@ -155,4 +155,7 @@
   body {
     @apply bg-background text-foreground;
   }
+  .bg-wa-chat {
+    background-color: var(--color-wa-panel);
+  }
 }

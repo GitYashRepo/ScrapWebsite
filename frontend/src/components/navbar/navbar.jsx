@@ -57,14 +57,14 @@ export function Navbar() {
 
    const AuthCart = () => (
       <div className="flex items-center gap-4">
-         <Link href="/signin/seller" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+         <Link href="/signup" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
             <User className="h-4 w-4" aria-hidden="true" />
             <span className="flex flex-col">
                <span>Seller</span>
                <span>Sign In/ Register</span>
             </span>
          </Link>
-         <Link href="/signin/buyer" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+         <Link href="/signup" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
             <User className="h-4 w-4" aria-hidden="true" />
             <span className="flex flex-col">
                <span>Buyer</span>
@@ -202,12 +202,12 @@ export function Navbar() {
          )}
       >
          {/* Mainbar */}
-         <div className="border-b bg-background fixed top-0 left-0 w-full z-50">
+         <div className="border-b bg-background top-0 left-0 w-full">
             <div className="mx-auto flex max-w-[90vw] bg-white items-center justify-between gap-4 py-1">
                <div className="flex items-center gap-3">
                   <MobileSheet />
                   <Link href="/" className="flex items-center gap-2">
-                     <img src="/Logo/logo.png" alt="Brand logo" className="w-[200px]" />
+                     <img src="/Logo/logo.png" alt="Brand logo" className="w-[350px]" />
                   </Link>
                </div>
 
