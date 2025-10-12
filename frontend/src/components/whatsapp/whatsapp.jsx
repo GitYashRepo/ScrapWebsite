@@ -33,7 +33,7 @@ export default function WhatsAppWidget({ brandName = "KabaadiMandi", phone = '+9
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
             className={cn(
-               "fixed z-50 bottom-6 right-10 size-14 rounded-full",
+               "fixed z-50 bottom-2 right-4 size-14 rounded-full",
                "flex items-center justify-center cursor-pointer",
             )}
          >
@@ -47,8 +47,8 @@ export default function WhatsAppWidget({ brandName = "KabaadiMandi", phone = '+9
                aria-modal="true"
                aria-label="WhatsApp styled chat"
                className={cn(
-                  "fixed z-50",
-                  "right-12 bottom-20 sm:bottom-20",
+                  "fixed z-50 h-[80vh]",
+                  "right-8 bottom-20 sm:bottom-16",
                   "w-[320px] sm:w-[360px]",
                   "rounded-xl shadow-2xl border border-black/5 overflow-hidden",
                   "bg-[#f6f7f5]",
@@ -82,7 +82,7 @@ export default function WhatsAppWidget({ brandName = "KabaadiMandi", phone = '+9
 
                {/* Messages area */}
                <div
-                  className={cn("p-4 space-y-3")}
+                  className={cn("p-4 space-y-2 overflow-y-auto h-[calc(80vh-165px)]")}
                   style={{
                      backgroundColor: "#f6f7f5",
                      backgroundImage:
@@ -128,7 +128,7 @@ export default function WhatsAppWidget({ brandName = "KabaadiMandi", phone = '+9
                </div>
 
                {/* Composer */}
-               <footer className="px-3 py-3 bg-[#f6f7f5] border-t border-black/5">
+               <footer className="px-3 py-2 bg-[#f6f7f5] border-t border-black/5">
                   <div className="flex items-center gap-2 bg-white rounded-full px-4 py-2 shadow-sm">
                      <input
                         className="flex-1 bg-transparent outline-none text-sm placeholder:text-[#667085]"

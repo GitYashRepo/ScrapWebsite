@@ -1,5 +1,5 @@
-import { connectDB } from "@/lib/mongodb";
-import Seller from "@/models/seller/seller";
+import connectDB from "@/lib/db/db";
+import Seller from "@/models/user/seller";
 import { hashPassword } from "@/utils/hash";
 
 export async function POST(req) {

@@ -1,8 +1,8 @@
 import CredentialsProvider from "next-auth/providers/credentials";
-import { connectDB } from "@/lib/mongodb";
-import Admin from "@/models/Admin";
-import Buyer from "@/models/Buyer";
-import Seller from "@/models/Seller";
+import connectDB from "@/lib/db/db";
+import Admin from "@/models/admin/admin";
+import Buyer from "@/models/buyer/buyer";
+import Seller from "@/models/user/seller";
 import { comparePassword } from "@/utils/hash";
 
 export const authOptions = {

@@ -1,4 +1,4 @@
-import { connectDB } from "@/lib/mongodb";
+import connectDB from "@/lib/db/db";
 import Buyer from "@/models/buyer/buyer";
 import { hashPassword } from "@/utils/hash";
 

@@ -6,7 +6,7 @@ import { Mail, MapPin, Phone } from "lucide-react"
 export default function Footer() {
    return (
       <footer className="w-full border-t bg-muted/30 text-muted-foreground">
-         <div className="mx-auto max-w-7xl px-6 py-12 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-8">
+         <div className="mx-auto max-w-7xl px-6 py-12 grid grid-cols-2 md:grid-cols-4 gap-8">
 
             {/* Brand / About */}
             <div className="col-span-2 sm:col-span-1">
@@ -30,27 +30,16 @@ export default function Footer() {
                </div>
             </div>
 
-            {/* Become a Seller */}
-            <div>
-               <h3 className="text-base font-semibold text-foreground mb-3">Sell With Us</h3>
-               <ul className="space-y-2 text-sm">
-                  <li><a href="#" className="hover:text-foreground transition-colors">Become a Regular Seller</a></li>
-                  <li><a href="#" className="hover:text-foreground transition-colors">Become a Premium Seller</a></li>
-                  <li><a href="#" className="hover:text-foreground transition-colors">Contact Us</a></li>
-                  <li><a href="#" className="hover:text-foreground transition-colors">Our Blogs</a></li>
-               </ul>
-            </div>
-
             {/* Help */}
             <div>
                <h3 className="text-base font-semibold text-foreground mb-3">Help</h3>
                <ul className="space-y-2 text-sm">
-                  <li><a href="#" className="hover:text-foreground transition-colors">Contact Us</a></li>
-                  <li><a href="#" className="hover:text-foreground transition-colors">Privacy Policy</a></li>
-                  <li><a href="#" className="hover:text-foreground transition-colors">Terms & Conditions</a></li>
-                  <li><a href="#" className="hover:text-foreground transition-colors">Refund & Cancellation</a></li>
-                  <li><a href="#" className="hover:text-foreground transition-colors">Shipping Policy</a></li>
-                  <li><a href="#" className="hover:text-foreground transition-colors">Your Order</a></li>
+                  <li><a href="/contact" className="hover:text-foreground transition-colors">Contact Us</a></li>
+                  <li><a href="/privacy-policy" className="hover:text-foreground transition-colors">Privacy Policy</a></li>
+                  <li><a href="/terms-conditions" className="hover:text-foreground transition-colors">Terms & Conditions</a></li>
+                  <li><a href="/refund-cancellation" className="hover:text-foreground transition-colors">Refund & Cancellation</a></li>
+                  <li><a href="/shipping-policy" className="hover:text-foreground transition-colors">Shipping Policy</a></li>
+                  <li><a href="/cart" className="hover:text-foreground transition-colors">Your Order</a></li>
                </ul>
             </div>
 
@@ -58,9 +47,9 @@ export default function Footer() {
             <div>
                <h3 className="text-base font-semibold text-foreground mb-3">Account</h3>
                <ul className="space-y-2 text-sm">
-                  <li><a href="#" className="hover:text-foreground transition-colors">Sign in</a></li>
-                  <li><a href="#" className="hover:text-foreground transition-colors">Create Account</a></li>
-                  <li><a href="#" className="hover:text-foreground transition-colors">Orders</a></li>
+                  <li><a href="/singin" className="hover:text-foreground transition-colors">Sign in</a></li>
+                  <li><a href="/signup" className="hover:text-foreground transition-colors">Create Account</a></li>
+                  <li><a href="/orders" className="hover:text-foreground transition-colors">Orders</a></li>
                </ul>
             </div>
 
@@ -68,13 +57,9 @@ export default function Footer() {
             <div>
                <h3 className="text-base font-semibold text-foreground mb-3">Company</h3>
                <ul className="space-y-2 text-sm">
-                  <li><a href="#" className="hover:text-foreground transition-colors">About Us</a></li>
-                  <li><a href="#" className="hover:text-foreground transition-colors">Blog</a></li>
-                  <li><a href="#" className="hover:text-foreground transition-colors">Sitemap</a></li>
-                  <li><a href="#" className="hover:text-foreground transition-colors">Become a Seller</a></li>
-                  <li><a href="#" className="hover:text-foreground transition-colors">Sign in</a></li>
-                  <li><a href="#" className="hover:text-foreground transition-colors">Register as Regular Seller</a></li>
-                  <li><a href="#" className="hover:text-foreground transition-colors">Become a Premium Seller</a></li>
+                  <li><a href="/about" className="hover:text-foreground transition-colors">About Us</a></li>
+                  <li><a href="/signup" className="hover:text-foreground transition-colors">Become a Seller</a></li>
+                  <li><a href="/signup" className="hover:text-foreground transition-colors">Register a Buyer</a></li>
                </ul>
             </div>
          </div>
