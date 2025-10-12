@@ -1,7 +1,7 @@
 "use client"
 
 
-export default Orders = () => {
+export default ordersPage = () => {
    return (
       <div>
          Orders Page
