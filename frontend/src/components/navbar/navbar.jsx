@@ -2,7 +2,8 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { Menu, Search, ShoppingCart, User, ChevronDown, Store } from "lucide-react"
+import { useSession, signIn, signOut } from "next-auth/react";
+import { Menu, Search, ShoppingCart, User, ChevronDown, Store, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -18,15 +19,13 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 
 export function Navbar() {
-   const [category, setCategory] = React.useState("all")
+   const [category, setCategory] = React.useState("all");
+   const { data: session, status } = useSession();
 
    const SearchBar = () => (
       <form
          className="flex w-[100%] justify-center items-stretch gap-2"
-         onSubmit={(e) => {
-            e.preventDefault()
-            // no-op demo handler
-         }}
+         onSubmit={(e) => e.preventDefault()}
          role="search"
          aria-label="Product search"
       >
@@ -55,38 +54,105 @@ export function Navbar() {
       </form>
    )
 
-   const AuthCart = () => (
-      <div className="flex items-center gap-4">
-         <Link href="/signup" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-            <User className="h-4 w-4" aria-hidden="true" />
-            <span className="flex flex-col">
-               <span>Seller</span>
-               <span>Sign In/ Register</span>
-            </span>
+   // const AuthCart = () => (
+   //    <div className="flex items-center gap-4">
+   //       <Link href="/signup" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+   //          <User className="h-4 w-4" aria-hidden="true" />
+   //          <span className="flex flex-col">
+   //             <span>Seller</span>
+   //             <span>Sign In/ Register</span>
+   //          </span>
+   //       </Link>
+   //       <Link href="/signup" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+   //          <User className="h-4 w-4" aria-hidden="true" />
+   //          <span className="flex flex-col">
+   //             <span>Buyer</span>
+   //             <span>Sign In/ Register</span>
+   //          </span>
+   //       </Link>
+   //       <Link
+   //          href="/cart"
+   //          className="relative inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+   //          aria-label="Cart"
+   //       >
+   //          <ShoppingCart className="h-5 w-5" aria-hidden="true" />
+   //          <span>Cart</span>
+   //          <span
+   //             aria-label="Cart items"
+   //             className="absolute -right-2 -top-2 rounded-full bg-primary px-1.5 py-0.5 text-[10px] leading-none text-primary-foreground"
+   //          >
+   //             0
+   //          </span>
+   //       </Link>
+   //    </div>
+   // )
+   const AuthCart = () => {
+      if (status === "loading") {
+         return <div className="text-sm text-muted-foreground">Loading...</div>;
+      }
+
+      if (session?.user) {
+         const { name, role } = session.user;
+
+         return (
+            <div className="flex items-center gap-4">
+               <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                     <Button
+                        variant="ghost"
+                        className="inline-flex items-center gap-2 text-sm"
+                     >
+                        <User className="h-4 w-4" aria-hidden="true" />
+                        <span>
+                           {name || "User"}{" "}
+                           <span className="text-muted-foreground text-xs capitalize">
+                              ({role})
+                           </span>
+                        </span>
+                        <ChevronDown className="h-3 w-3 opacity-70" aria-hidden="true" />
+                     </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                     <DropdownMenuLabel>Account</DropdownMenuLabel>
+                     <DropdownMenuSeparator />
+                     <DropdownMenuItem asChild>
+                        <Link href={`/dashboard/${role}`}>Dashboard</Link>
+                     </DropdownMenuItem>
+                     <DropdownMenuItem
+                        onClick={() => signOut({ callbackUrl: "/" })}
+                        className="flex items-center gap-2 text-red-600"
+                     >
+                        <LogOut className="h-4 w-4" />
+                        Sign out
+                     </DropdownMenuItem>
+                  </DropdownMenuContent>
+               </DropdownMenu>
+
+               <Link
+                  href="/cart"
+                  className="relative inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+                  aria-label="Cart"
+               >
+                  <ShoppingCart className="h-5 w-5" aria-hidden="true" />
+                  <span>Cart</span>
+                  <span className="absolute -right-2 -top-2 rounded-full bg-primary px-1.5 py-0.5 text-[10px] leading-none text-primary-foreground">
+                     0
+                  </span>
+               </Link>
+            </div>
+         );
+      }
+
+      // 🧑‍💻 Not signed in → show sign in button
+      return (
+         <Link href="/signup" className="inline-block">
+            <Button variant="outline" className="text-sm">
+               <User className="h-4 w-4 mr-2" />
+               Sign In / Register
+            </Button>
          </Link>
-         <Link href="/signup" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-            <User className="h-4 w-4" aria-hidden="true" />
-            <span className="flex flex-col">
-               <span>Buyer</span>
-               <span>Sign In/ Register</span>
-            </span>
-         </Link>
-         <Link
-            href="/cart"
-            className="relative inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-            aria-label="Cart"
-         >
-            <ShoppingCart className="h-5 w-5" aria-hidden="true" />
-            <span>Cart</span>
-            <span
-               aria-label="Cart items"
-               className="absolute -right-2 -top-2 rounded-full bg-primary px-1.5 py-0.5 text-[10px] leading-none text-primary-foreground"
-            >
-               0
-            </span>
-         </Link>
-      </div>
-   )
+      );
+   };
 
    const BottomNav = () => (
       <nav className="w-full border-t border-b bg-background">

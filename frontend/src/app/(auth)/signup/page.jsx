@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState } from "react";
 
 export default function SignupPage() {
@@ -34,7 +35,7 @@ export default function SignupPage() {
    };
 
    return (
-      <div className="max-w-lg mx-auto mt-10 border p-6 rounded-xl shadow bg-white">
+      <div className="max-w-lg mx-auto my-10 border p-6 rounded-xl shadow bg-white">
          <h1 className="text-3xl font-bold mb-4 text-center">
             Sign Up as {role.charAt(0).toUpperCase() + role.slice(1)}
          </h1>
@@ -235,6 +236,10 @@ export default function SignupPage() {
                {loading ? "Creating..." : "Create Account"}
             </button>
          </form>
+
+         <div className="flex justify-center items-center mt-4 gap-2 text-sm text-gray-600">
+            <p>Already have an Account?</p><span className="text-blue-800 underline"><Link href="/signin">SignIn</Link></span>
+         </div>
 
          {message && (
             <p

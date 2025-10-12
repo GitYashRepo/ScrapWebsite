@@ -22,7 +22,7 @@ export default function SignInForm({ role }) {
         };
 
         return (
-                <div className="max-w-md mx-auto mt-16 border p-6 rounded-xl shadow bg-white">
+                <div className="max-w-md mx-auto my-16 border p-6 rounded-xl shadow bg-white">
                         <h1 className="text-2xl font-bold mb-4 text-center">
                                 {role.charAt(0).toUpperCase() + role.slice(1)} Sign In
                         </h1>
