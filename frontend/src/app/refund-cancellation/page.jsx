@@ -1,10 +1,13 @@
 "use client"
 
 
-export default RefundCancellation=()=> {
+const RefundCancellation=()=> {
    return (
       <div>
          Refund & Cancellation Page
       </div>
    )
 }
+
+
+export default RefundCancellation;
