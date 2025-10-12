@@ -1,6 +1,4 @@
-
-
-
+"use client"
 
 
 export default Orders = () => {
