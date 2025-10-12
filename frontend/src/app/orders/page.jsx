@@ -1,7 +1,7 @@
 "use client"
 
 
-const ordersPage = () => {
+const OrdersPage = () => {
    return (
       <div>
          Orders Page
@@ -9,4 +9,4 @@ const ordersPage = () => {
    )
 }
 
-export default ordersPage;
+export default OrdersPage;
