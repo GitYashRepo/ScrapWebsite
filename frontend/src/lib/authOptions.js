@@ -10,6 +10,9 @@ export const authOptions = {
     CredentialsProvider({
       name: "Credentials",
       async authorize(credentials) {
+        if (!process.env.MONGODB_URI) {
+            throw new Error("Missing MongoDB connection string in production");
+        }
         await connectDB();
         const { email, password } = credentials;
 
