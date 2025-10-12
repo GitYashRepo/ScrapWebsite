@@ -14,6 +14,7 @@ export default function SignInForm({ role }) {
                         redirect: false,
                         email,
                         password,
+                        callbackUrl: `/dashboard/${role}`,
                 });
 
                 if (res.error) setError(res.error);
