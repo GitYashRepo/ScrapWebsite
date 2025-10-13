@@ -1,5 +1,5 @@
 import connectDB from "@/lib/db/db";
-import Product from "@/models/product";
+import Product from "@/models/product/product";
 import { getToken } from "next-auth/jwt";
 
 // ✅ PATCH: Update Product (Seller only)
