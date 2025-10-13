@@ -5,13 +5,12 @@ const ProductSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     description: { type: String, required: true },
-    price: { type: Number, required: true },
+    pricePerKg: { type: Number, required: true },
     quantity: { type: Number, required: true },
-    images: [{ type: String }], // array of image URLs
+    images: [{ type: String }], 
     category: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
-      required: true,
     },
     seller: {
       type: mongoose.Schema.Types.ObjectId,

@@ -45,12 +45,24 @@ export const authOptions = {
         return baseUrl;
     },
     async jwt({ token, user }) {
-      if (user) token.role = user.role;
+      if (user) {
+         token.id = user.id;
+         token.role = user.role;
+      }
       return token;
     },
     async session({ session, token }) {
-      session.user.role = token.role;
+      if (token) {
+        session.user.id = token.id;
+        session.user.role = token.role;
+      }
       return session;
+    },
+    async redirect({ url, baseUrl, token }) {
+      if (token?.role === "admin") return `${baseUrl}/dashboard/admin`;
+      if (token?.role === "buyer") return `${baseUrl}/dashboard/buyer`;
+      if (token?.role === "seller") return `${baseUrl}/dashboard/seller`;
+      return baseUrl;
     },
   },
 

@@ -1,12 +1,20 @@
 import connectDB from "@/lib/db/db";
-import Product from "@/models/product";
+import Product from "@/models/product/product";
 import { getToken } from "next-auth/jwt";
 
 // ✅ GET: All products (public - buyers can view)
-export async function GET() {
+export async function GET(request) {
   try {
     await connectDB();
-    const products = await Product.find().populate("category seller", "name storeName email");
+
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || token.role !== "seller") {
+      return new Response(JSON.stringify({ error: "Unauthorized: Sellers only" }), { status: 403 });
+    }
+
+    const sellerId = token.id;
+
+    const products = await Product.find({ seller: sellerId }).populate("category seller", "name storeName email");
     return new Response(JSON.stringify(products), { status: 200 });
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
@@ -22,15 +30,16 @@ export async function POST(req) {
     }
 
     await connectDB();
-    const { name, description, price, quantity, category, images } = await req.json();
 
-    if (!name || !price || !quantity || !category)
+    const { name, description, pricePerKg, quantity, category, images } = await req.json();
+
+    if (!name || !pricePerKg || !quantity || !category)
       return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400 });
 
     const product = await Product.create({
       name,
       description,
-      price,
+      pricePerKg,
       quantity,
       images,
       category,
