@@ -2,19 +2,33 @@ import connectDB from "@/lib/db/db";
 import Admin from "@/models/admin/admin";
 import { hashPassword } from "@/utils/hash";
 
-export async function POST(req) {
+export async function POST() {
   try {
     await connectDB();
-    const { name, email, password } = await req.json();
 
-    const exists = await Admin.findOne({ email });
-    if (exists) return new Response(JSON.stringify({ error: "Admin already exists" }), { status: 400 });
+    // ✅ Hardcoded one-time admin credentials
+    const adminEmail = "webtechware25@gmail.com";
+    const adminPassword = "9201043";
+    const adminName = "Yash Singh";
 
-    const hashed = await hashPassword(password);
-    const admin = await Admin.create({ name, email, password: hashed });
+    // ✅ Check if admin already exists
+    const existingAdmin = await Admin.findOne({ email: adminEmail });
+    if (existingAdmin) {
+      return new Response(JSON.stringify({ message: "Admin already exists" }), { status: 400 });
+    }
 
-    return new Response(JSON.stringify({ message: "Admin created", admin }), { status: 201 });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    const hashed = await hashPassword(adminPassword);
+    const admin = await Admin.create({
+      name: adminName,
+      email: adminEmail,
+      password: hashed,
+      role: "admin",
+    });
+
+    return new Response(JSON.stringify({ message: "✅ Admin created successfully", admin }), {
+      status: 201,
+    });
+  } catch (err) {
+    return new Response(JSON.stringify({ message: err.message }), { status: 500 });
   }
 }
