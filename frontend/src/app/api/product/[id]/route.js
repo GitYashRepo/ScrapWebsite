@@ -2,6 +2,37 @@ import connectDB from "@/lib/db/db";
 import Product from "@/models/product/product";
 import { getToken } from "next-auth/jwt";
 
+
+
+// ✅ GET: Fetch single product (public for all logged-in users)
+export async function GET(req, context) {
+   const { params } = await context;
+   const { id } = params;
+  try {
+    await connectDB();
+
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+
+    // Optionally allow both logged-in buyers/sellers/admins
+    if (!token) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 403 });
+    }
+
+    const product = await Product.findById(id)
+         .populate("category") // populate full category document
+         .populate("seller")   // ✅ populate entire seller document (all fields)
+         .sort({ createdAt: -1 });
+
+    if (!product) {
+      return new Response(JSON.stringify({ error: "Product not found" }), { status: 404 });
+    }
+
+    return new Response(JSON.stringify(product), { status: 200 });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+  }
+}
+
 // ✅ PATCH: Update Product (Seller only)
 export async function PATCH(req, { params }) {
   try {

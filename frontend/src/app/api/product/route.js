@@ -3,6 +3,8 @@ import Product from "@/models/product/product";
 import Category from "@/models/category/category";
 import { getToken } from "next-auth/jwt";
 
+
+
 // ✅ GET: All products (public - buyers can view)
 export async function GET(request) {
   try {
@@ -20,10 +22,15 @@ export async function GET(request) {
       products = await Product.find({ seller: token.id })
         .populate("category seller", "name storeName email");
     }
-    // 🔹 If buyer → show all available products
+    // 🔹 If buyer → show available products that are NOT auction
     else if (token.role === "buyer") {
-      products = await Product.find({ status: "available" })
-        .populate("category seller", "name storeName email");
+      products = await Product.find({
+        status: "available",
+        $or: [
+          { isAuction: false },
+          { isAuction: { $exists: false } },
+        ],
+      }).populate("category seller", "name storeName email");
     }
     // 🔹 If admin → show all products
     else if (token.role === "admin") {

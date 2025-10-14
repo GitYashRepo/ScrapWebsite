@@ -183,14 +183,8 @@ export function Navbar() {
                </DropdownMenuContent>
             </DropdownMenu>
 
-            <Link href="/auctions" className="text-sm text-foreground hover:underline">
+            <Link href="/dashboard/buyer/auctions" className="text-sm text-foreground hover:underline">
                Auctions
-            </Link>
-            <Link href="/tenders" className="text-sm text-foreground hover:underline">
-               Tenders
-            </Link>
-            <Link href="/make-offer" className="text-sm text-foreground hover:underline">
-               Make an Offer
             </Link>
          </div>
       </nav>

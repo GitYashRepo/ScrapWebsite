@@ -2,39 +2,34 @@
 
 import { useEffect, useState } from "react";
 
-const BuyerDashboard = () => {
-   const [products, setProducts] = useState([]);
+const AuctionProductsPage = () => {
+   const [auctions, setAuctions] = useState([]);
    const [loading, setLoading] = useState(false);
    const [message, setMessage] = useState("");
 
-   // Fetch all available products for buyer
    useEffect(() => {
-      const fetchProducts = async () => {
+      const fetchAuctions = async () => {
          try {
-            setLoading(true);
-            const res = await fetch("/api/product", {
+            const res = await fetch("/api/product/auctions", {
                method: "GET",
-               credentials: "include", // 🔹 ensures cookies (and hence session) are sent
+               credentials: "include",
             });
-            if (!res.ok) throw new Error("Failed to fetch products");
+            if (!res.ok) throw new Error("Failed to fetch auction products");
             const data = await res.json();
-            setProducts(data);
+            setAuctions(data);
          } catch (error) {
             console.error(error);
-         } finally {
-            setLoading(false);
          }
       };
-      fetchProducts();
+      fetchAuctions();
    }, []);
 
-   // Handle Buy or Pitch button click
    const handleAction = async (productId, actionType) => {
       setLoading(true);
       setMessage("");
 
       try {
-         // Example: call API to create a purchase or pitch
+         // Example: call /api/pitch to place a bid
          const res = await fetch(`/api/${actionType}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -44,7 +39,7 @@ const BuyerDashboard = () => {
          const data = await res.json();
          if (!res.ok) throw new Error(data.error || "Action failed");
 
-         setMessage(`✅ Successfully ${actionType === "buy" ? "purchased" : "pitched"} product!`);
+         setMessage(`✅ Successfully ${actionType === "pitch" ? "pitched" : "processed"} product!`);
       } catch (error) {
          console.error(error);
          setMessage(`❌ ${error.message}`);
@@ -55,7 +50,7 @@ const BuyerDashboard = () => {
 
    return (
       <div className="p-6">
-         <h1 className="text-2xl font-bold mb-4">All Products</h1>
+         <h1 className="text-2xl font-bold mb-4">Active Auctions</h1>
 
          {message && (
             <div className="mb-4 text-center text-sm font-medium text-blue-700 bg-blue-50 p-2 rounded-lg">
@@ -63,32 +58,11 @@ const BuyerDashboard = () => {
             </div>
          )}
 
-         {loading ? (
-            <div className="flex justify-center items-center h-64">
-               <svg
-                  className="animate-spin h-10 w-10 text-blue-600"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-               >
-                  <circle
-                     className="opacity-25"
-                     cx="12"
-                     cy="12"
-                     r="10"
-                     stroke="currentColor"
-                     strokeWidth="4"
-                  ></circle>
-                  <path
-                     className="opacity-75"
-                     fill="currentColor"
-                     d="M4 12a8 8 0 018-8v8H4z"
-                  ></path>
-               </svg>
-            </div>
+         {auctions.length === 0 ? (
+            <p className="text-gray-600">Loading.......</p>
          ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-               {products.map((product) => (
+               {auctions.map((product) => (
                   <div
                      key={product._id}
                      className="border rounded-xl shadow-sm p-4 hover:shadow-md transition"
@@ -102,8 +76,12 @@ const BuyerDashboard = () => {
                      )}
 
                      <h2 className="font-semibold text-lg">{product.name}</h2>
-                     <p className="text-sm text-gray-600 line-clamp-2">{product.description}</p>
-                     <p className="text-green-700 font-bold mt-2">₹{product.pricePerKg}/kg</p>
+                     <p className="text-sm text-gray-600 line-clamp-2">
+                        {product.description}
+                     </p>
+                     <p className="text-green-700 font-bold mt-2">
+                        Starting Price: ₹{product.pricePerKg}/kg
+                     </p>
 
                      <p className="text-xs text-gray-500 mt-1">
                         Category: {product.category?.name || "Uncategorized"}
@@ -112,17 +90,25 @@ const BuyerDashboard = () => {
                         Seller: {product.seller?.storeName || product.seller?.name || "Unknown"}
                      </p>
 
+                     <p className="text-xs text-gray-500 mt-2">
+                        🕒 Auction Period:{" "}
+                        {new Date(product.auctionStart).toLocaleDateString()} →{" "}
+                        {new Date(product.auctionEnd).toLocaleDateString()}
+                     </p>
+
                      <div className="flex gap-2 mt-4">
                         <button
-                           onClick={() => handleAction(product._id, "buy")}
+                           onClick={() => handleAction(product._id, "pitch")}
                            disabled={loading}
-                           className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 disabled:opacity-50"
+                           className="flex-1 bg-yellow-600 text-white py-2 rounded-lg hover:bg-yellow-700 disabled:opacity-50"
                         >
-                           {loading ? "Processing..." : "Buy"}
+                           {loading ? "Processing..." : "Pitch"}
                         </button>
 
                         <button
-                           onClick={() => window.location.href = `/dashboard/buyer/product/${product._id}`}
+                           onClick={() =>
+                              (window.location.href = `/dashboard/buyer/product/${product._id}`)
+                           }
                            className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
                         >
                            View Details
@@ -133,8 +119,7 @@ const BuyerDashboard = () => {
             </div>
          )}
       </div>
-
    );
 };
 
-export default BuyerDashboard;
+export default AuctionProductsPage;
