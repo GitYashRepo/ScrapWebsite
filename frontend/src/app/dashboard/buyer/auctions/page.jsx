@@ -1,5 +1,6 @@
 "use client";
 
+import SkeletonCard from "@/components/Loader/skeletoncard/skeleton";
 import { useEffect, useState } from "react";
 
 const AuctionProductsPage = () => {
@@ -10,6 +11,7 @@ const AuctionProductsPage = () => {
    useEffect(() => {
       const fetchAuctions = async () => {
          try {
+            setLoading(true);
             const res = await fetch("/api/product/auctions", {
                method: "GET",
                credentials: "include",
@@ -19,6 +21,8 @@ const AuctionProductsPage = () => {
             setAuctions(data);
          } catch (error) {
             console.error(error);
+         } finally {
+            setLoading(false);
          }
       };
       fetchAuctions();
@@ -58,8 +62,13 @@ const AuctionProductsPage = () => {
             </div>
          )}
 
-         {auctions.length === 0 ? (
-            <p className="text-gray-600">Loading.......</p>
+         {loading ? (
+            // 🔹 Show skeletons while loading
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-[5vw]">
+               {Array.from({ length: 6 }).map((_, i) => (
+                  <SkeletonCard key={i} />
+               ))}
+            </div>
          ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                {auctions.map((product) => (

@@ -5,9 +5,8 @@ import { getToken } from "next-auth/jwt";
 
 
 // ✅ GET: Fetch single product (public for all logged-in users)
-export async function GET(req, context) {
-   const { params } = await context;
-   const { id } = params;
+export async function GET(req, {params}) {
+   const { id } = await params;
   try {
     await connectDB();
 

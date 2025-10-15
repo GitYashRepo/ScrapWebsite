@@ -1,5 +1,6 @@
 "use client";
 
+import SkeletonCard from "@/components/Loader/skeletoncard/skeleton";
 import { useEffect, useState } from "react";
 
 const BuyerDashboard = () => {
@@ -54,7 +55,7 @@ const BuyerDashboard = () => {
    };
 
    return (
-      <div className="p-6">
+      <div className="p-6 min-h-[80vh]">
          <h1 className="text-2xl font-bold mb-4">All Products</h1>
 
          {message && (
@@ -64,27 +65,11 @@ const BuyerDashboard = () => {
          )}
 
          {loading ? (
-            <div className="flex justify-center items-center h-64">
-               <svg
-                  className="animate-spin h-10 w-10 text-blue-600"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-               >
-                  <circle
-                     className="opacity-25"
-                     cx="12"
-                     cy="12"
-                     r="10"
-                     stroke="currentColor"
-                     strokeWidth="4"
-                  ></circle>
-                  <path
-                     className="opacity-75"
-                     fill="currentColor"
-                     d="M4 12a8 8 0 018-8v8H4z"
-                  ></path>
-               </svg>
+            // 🔹 Show skeletons while loading
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-[5vw]">
+               {Array.from({ length: 6 }).map((_, i) => (
+                  <SkeletonCard key={i} />
+               ))}
             </div>
          ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
