@@ -133,8 +133,16 @@ export default function SignupPage() {
                      placeholder="Pincode"
                      type="number"
                      required
+                     onInput={(e) => {
+                        // prevent more than 6 digits
+                        if (e.target.value.length > 6) {
+                           e.target.value = e.target.value.slice(0, 6);
+                        }
+                     }}
                      onChange={handleChange}
                      className="w-full p-2 border rounded"
+                     inputMode="numeric"
+                     pattern="\d{6}"
                   />
                   <input
                      name="phone"
@@ -206,8 +214,16 @@ export default function SignupPage() {
                      placeholder="Pincode"
                      type="number"
                      required
+                     onInput={(e) => {
+                        // prevent more than 6 digits
+                        if (e.target.value.length > 6) {
+                           e.target.value = e.target.value.slice(0, 6);
+                        }
+                     }}
                      onChange={handleChange}
                      className="w-full p-2 border rounded"
+                     inputMode="numeric"
+                     pattern="\d{6}"
                   />
                   <input
                      name="phone"

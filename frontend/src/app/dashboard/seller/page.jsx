@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import SkeletonCard from "@/components/Loader/skeletoncard/skeleton";
 
 export default function SellerDashboard() {
    const { data: session } = useSession();
@@ -12,6 +13,7 @@ export default function SellerDashboard() {
 
    const fetchProducts = async () => {
       try {
+         setLoading(true);
          const res = await fetch("/api/product");
          const data = await res.json();
 
@@ -62,7 +64,12 @@ export default function SellerDashboard() {
          </div>
 
          {loading ? (
-            <p>Loading...</p>
+            // 🔹 Show skeletons while loading
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-[5vw]">
+               {Array.from({ length: 6 }).map((_, i) => (
+                  <SkeletonCard key={i} />
+               ))}
+            </div>
          ) : (
             <>
                {/* Normal Products Section */}
