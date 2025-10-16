@@ -1,6 +1,6 @@
 import connectDB from "@/lib/db/db";
-import Order from "@/models/order";
-import Product from "@/models/product";
+import Order from "@/models/order/order";
+import Product from "@/models/product/product";
 import { getToken } from "next-auth/jwt";
 
 export async function POST(req) {

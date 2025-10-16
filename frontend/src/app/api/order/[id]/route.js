@@ -1,5 +1,5 @@
 import connectDB from "@/lib/db/db";
-import Order from "@/models/order";
+import Order from "@/models/order/order";
 import { getToken } from "next-auth/jwt";
 
 // ✅ GET: View specific order (Buyer, Seller, or Admin)
