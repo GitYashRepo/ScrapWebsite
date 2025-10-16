@@ -4,11 +4,11 @@ import Message from "@/models/chat/message";
 
 export async function POST(req) {
   try {
-    const { sessionId } = await req.json();
     await connectDB();
+    const { sessionId } = await req.json();
+    if (!sessionId) return NextResponse.json({ error: "Missing sessionId" }, { status: 400 });
 
-    const messages = await Message.find({ session: sessionId }).sort("createdAt");
-
+    const messages = await Message.find({ session: sessionId }).sort({ createdAt: 1 }).lean();
     return NextResponse.json({ messages });
   } catch (error) {
     console.error(error);

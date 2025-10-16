@@ -16,5 +16,7 @@ const ChatSessionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+ChatSessionSchema.index({ buyer: 1, seller: 1, product: 1 }, { unique: true }); // ensures no duplicate sessions
+
 export default mongoose.models.ChatSession ||
   mongoose.model("ChatSession", ChatSessionSchema);
