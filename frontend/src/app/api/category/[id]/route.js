@@ -1,5 +1,5 @@
 import connectDB from "@/lib/db/db";
-import Category from "@/models/category";
+import Category from "@/models/category/category";
 import { getToken } from "next-auth/jwt";
 
 // ✅ PATCH: Update category (Admin only)

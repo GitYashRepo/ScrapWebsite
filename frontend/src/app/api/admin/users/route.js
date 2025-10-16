@@ -1,6 +1,6 @@
 import connectDB from "@/lib/db/db";
 import Seller from "@/models/user/seller";
-import Buyer from "@/models/user/buyer";
+import Buyer from "@/models/buyer/buyer";
 import { getToken } from "next-auth/jwt";
 
 export async function GET(req) {
