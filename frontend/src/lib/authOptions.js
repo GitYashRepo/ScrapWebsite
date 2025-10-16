@@ -38,12 +38,6 @@ export const authOptions = {
   ],
 
   callbacks: {
-    async redirect({ url, baseUrl, token }) {
-        if (token?.role === "admin") return `${baseUrl}/dashboard/admin`;
-        if (token?.role === "buyer") return `${baseUrl}/dashboard/buyer`;
-        if (token?.role === "seller") return `${baseUrl}/dashboard/seller`;
-        return baseUrl;
-    },
     async jwt({ token, user }) {
       if (user) {
          token.id = user.id;
