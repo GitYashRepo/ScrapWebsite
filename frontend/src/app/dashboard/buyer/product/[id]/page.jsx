@@ -1,15 +1,33 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import SkeletonCard from "@/components/Loader/skeletoncard/skeleton";
+import { useParams, useRouter } from "next/navigation";
 import Spinner from "@/components/Loader/spinner/spinner";
 
 const ProductDetails = () => {
    const { id } = useParams();
+   const router = useRouter();
    const [product, setProduct] = useState(null);
    const [loading, setLoading] = useState(true);
    const [error, setError] = useState("");
+   const [buying, setBuying] = useState(false); // 👈 track Buy Now loading
+
+   // 👇 Replace with your actual logged-in buyer ID from session if using next-auth
+   const [buyerId, setBuyerId] = useState(null);
+
+   // Fetch buyer ID (if using next-auth)
+   useEffect(() => {
+      const fetchSession = async () => {
+         try {
+            const res = await fetch("/api/auth/session");
+            const data = await res.json();
+            setBuyerId(data?.user?.id);
+         } catch (err) {
+            console.error("Failed to fetch session:", err);
+         }
+      };
+      fetchSession();
+   }, []);
 
    useEffect(() => {
       const fetchProduct = async () => {
@@ -27,6 +45,36 @@ const ProductDetails = () => {
       };
       if (id) fetchProduct();
    }, [id]);
+
+   // 🧩 Handle Buy Now Click —> open chat session
+   const handleBuyNow = async () => {
+      if (!buyerId) {
+         alert("You must be signed in as a buyer to start a chat.");
+         return;
+      }
+
+      setBuying(true);
+      try {
+         const res = await fetch("/api/chat/start", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ productId: product._id, buyerId }),
+         });
+
+         const data = await res.json();
+         if (!res.ok) throw new Error(data.error || "Failed to start chat session");
+
+         // ✅ Redirect buyer to chat page
+         router.push(
+            `/dashboard/buyer/chat?sessionId=${data.sessionId}&productId=${product._id}`
+         );
+      } catch (err) {
+         console.error(err);
+         alert(err.message);
+      } finally {
+         setBuying(false);
+      }
+   };
 
 
    return (
