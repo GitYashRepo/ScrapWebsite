@@ -1,15 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import SkeletonCard from "@/components/Loader/skeletoncard/skeleton";
+import { useParams, useRouter } from "next/navigation";
 import Spinner from "@/components/Loader/spinner/spinner";
+import { useSession } from "next-auth/react";
 
 const ProductDetails = () => {
    const { id } = useParams();
+   const router = useRouter();
+   const { data: session } = useSession(); // ✅ this gives you logged-in user info
+   const buyerId = session?.user?.id;
    const [product, setProduct] = useState(null);
    const [loading, setLoading] = useState(true);
    const [error, setError] = useState("");
+   const [buying, setBuying] = useState(false); // 👈 track Buy Now loading
+
 
    useEffect(() => {
       const fetchProduct = async () => {
@@ -27,6 +32,16 @@ const ProductDetails = () => {
       };
       if (id) fetchProduct();
    }, [id]);
+
+   // 🧩 Handle Buy Now Click —> open chat session
+   const handleBuyNow = async () => {
+      if (!buyerId) {
+         alert("You must be signed in as a buyer to start a chat.");
+         return;
+      }
+      const chatUrl = `/dashboard/buyer/chat/${product._id}`;
+      router.push(chatUrl);
+   };
 
 
    return (
@@ -131,13 +146,14 @@ const ProductDetails = () => {
                         </p>
                      </div>
 
-                     {/* Buttons */}
+                     {/* 🛒 Buttons */}
                      <div className="flex gap-3">
                         <button
-                           onClick={() => alert("Buying feature coming soon!")}
-                           className="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700"
+                           onClick={handleBuyNow}
+                           disabled={buying}
+                           className="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 disabled:opacity-60"
                         >
-                           Buy Now
+                           {buying ? "Opening Chat..." : "Buy Now"}
                         </button>
 
                         {product.isAuction && (
