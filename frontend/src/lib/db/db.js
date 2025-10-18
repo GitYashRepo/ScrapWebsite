@@ -1,9 +1,9 @@
 // src/lib/db/db.jsx
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI;
+const connectioncode = process.env.MONGODB_URI;
 
-if (!MONGODB_URI) throw new Error("⚠️ MONGODB_URI not defined in .env");
+if (!connectioncode) throw new Error("⚠️ MONGODB_URI not defined in .env");
 
 let cached = global.mongoose;
 if (!cached) cached = global.mongoose = { conn: null, promise: null };
@@ -12,7 +12,7 @@ const connectDB = async () => {
   if (cached.conn) return cached.conn;
 
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI, {
+    cached.promise = mongoose.connect(connectioncode, {
       bufferCommands: false,
     }).then((mongoose) => mongoose);
   }

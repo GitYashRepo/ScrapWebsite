@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import io from "socket.io-client";
@@ -14,49 +14,124 @@ export default function BuyerChatPage() {
 
    const [sellerId, setSellerId] = useState(null);
    const [product, setProduct] = useState(null);
+   const [sessionId, setSessionId] = useState(null);
    const [message, setMessage] = useState("");
    const [messages, setMessages] = useState([]);
+   const messagesRef = useRef(null);
 
+   // --- Start Chat / Load session
    useEffect(() => {
-      if (!productId) return;
-      // Fetch product to get seller info
-      const fetchProduct = async () => {
+      if (!productId || !buyerId) return;
+
+      const startChat = async () => {
          try {
-            const res = await fetch(`/api/product/${productId}`);
+            const res = await fetch("/api/chat/start", {
+               method: "POST",
+               headers: { "Content-Type": "application/json" },
+               body: JSON.stringify({ productId, buyerId }),
+            });
             const data = await res.json();
-            setProduct(data);
-            setSellerId(data?.seller?._id);
-         } catch (error) {
-            console.error("Error loading product for chat:", error);
+
+            if (data.sessionId) {
+               setSessionId(data.sessionId);
+               setProduct(data.product);
+               setSellerId(data.seller._id);
+            } else {
+               console.warn("startChat returned no sessionId", data);
+            }
+         } catch (err) {
+            console.error("Error starting chat:", err);
          }
       };
-      fetchProduct();
-   }, [productId]);
 
+      startChat();
+   }, [productId, buyerId]);
+
+   // --- Setup Socket
    useEffect(() => {
       if (!buyerId || !sellerId || !productId) return;
 
-      fetch("/api/socket"); // init socket endpoint
-      socket = io({ path: "/api/socket" });
+      if (!socket) {
+         socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+            transports: ["websocket", "polling"],
+         });
+      }
 
       const roomId = `${buyerId}_${sellerId}_${productId}`;
       socket.emit("joinRoom", roomId);
 
+      socket.off("receiveMessage");
+      socket.off("messageSaved");
+      socket.off("errorMessage");
+
+      socket.on("connect", () => console.log("Socket connected (buyer):", socket.id));
+      socket.on("joined", (d) => console.log("Joined room ack (buyer):", d));
+
       socket.on("receiveMessage", (msg) => {
-         setMessages((prev) => [...prev, msg]);
+         setMessages((prev) => {
+            // if already exists
+            if (prev.some((m) => m._id === msg._id)) return prev;
+
+            // if a temp message from same sender exists, replace it
+            const tempIdx = prev.findIndex(
+               (m) =>
+                  m._id.startsWith("temp-") &&
+                  m.sender === msg.sender &&
+                  m.message === msg.message
+            );
+
+            if (tempIdx !== -1) {
+               const newList = [...prev];
+               newList[tempIdx] = msg;
+               return newList;
+            }
+
+            // else just add
+            return [...prev, msg];
+         });
       });
 
-      return () => socket.disconnect();
+      socket.on("messageSaved", ({ message: savedMsg }) => {
+         setMessages((prev) => {
+            if (!savedMsg) return prev;
+
+            // Replace temporary message
+            const idx = prev.findIndex(
+               (m) =>
+                  m._id.startsWith("temp-") &&
+                  m.message === savedMsg.message &&
+                  m.sender === buyerId
+            );
+
+            if (idx !== -1) {
+               const newList = [...prev];
+               newList[idx] = savedMsg;
+               return newList;
+            }
+
+            // Otherwise add new if not existing
+            if (prev.find((m) => m._id === savedMsg._id)) return prev;
+            return [...prev, savedMsg];
+         });
+      });
+
+      socket.on("errorMessage", (d) => console.error("Socket errorMessage (buyer):", d));
+
+      return () => {
+         socket?.disconnect();
+         socket = null;
+      };
    }, [buyerId, sellerId, productId]);
 
+   // --- Fetch existing messages
    useEffect(() => {
-      if (!productId) return;
+      if (!sessionId) return;
       const fetchMessages = async () => {
          try {
             const res = await fetch("/api/chat/message", {
                method: "POST",
                headers: { "Content-Type": "application/json" },
-               body: JSON.stringify({ sessionId: `${buyerId}_${productId}` }),
+               body: JSON.stringify({ sessionId }),
             });
             const data = await res.json();
             setMessages(data.messages || []);
@@ -65,28 +140,34 @@ export default function BuyerChatPage() {
          }
       };
       fetchMessages();
-   }, [productId, buyerId]);
+   }, [sessionId]);
 
-   const handleSend = async () => {
-      if (!message.trim()) return;
-      try {
-         const res = await fetch("/api/chat/send", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-               buyerId,
-               sellerId,
-               productId,
-               text: message,
-               senderModel: "Buyer",
-            }),
-         });
-         const data = await res.json();
-         if (data.message) setMessages((prev) => [...prev, data.message]);
-         setMessage("");
-      } catch (err) {
-         console.error("Failed to send message:", err);
-      }
+   // --- Send message
+   const handleSend = () => {
+      if (!message.trim() || !buyerId || !sellerId || !productId) return;
+
+      const tempId = `temp-${Date.now()}`;
+      const newMsg = {
+         _id: tempId,
+         sender: buyerId,
+         senderModel: "Buyer",
+         message,
+         createdAt: new Date().toISOString(),
+         time: new Date().toLocaleTimeString(),
+      };
+
+      setMessages((p) => [...p, newMsg]);
+
+      socket.emit("sendMessage", {
+         buyerId,
+         sellerId,
+         productId,
+         message,
+         senderModel: "Buyer",
+         tempId,
+      });
+
+      setMessage("");
    };
 
    if (status === "loading" || !product) {
@@ -104,21 +185,27 @@ export default function BuyerChatPage() {
             {messages.length === 0 ? (
                <p className="text-gray-500 text-center mt-10">No messages yet</p>
             ) : (
-               messages.map((msg, i) => (
-                  <div
-                     key={i}
-                     className={`mb-2 p-2 rounded-lg ${msg.senderId === buyerId
-                        ? "bg-green-200 text-right ml-auto max-w-xs"
-                        : "bg-gray-200 text-left mr-auto max-w-xs"
-                        }`}
-                  >
-                     <p>{msg.text}</p>
-                     <span className="block text-xs text-gray-500 mt-1">
-                        {msg.time}
-                     </span>
-                  </div>
-               ))
+               messages.map((msg, i) => {
+                  const isBuyer =
+                     String(msg.sender) === String(buyerId) ||
+                     msg.senderModel === "Buyer";
+                  return (
+                     <div
+                        key={msg._id || i}
+                        className={`mb-2 p-2 rounded-lg ${isBuyer
+                           ? "bg-green-200 text-right ml-auto max-w-xs"
+                           : "bg-gray-200 text-left mr-auto max-w-xs"
+                           }`}
+                     >
+                        <p>{msg.message}</p>
+                        <span className="block text-xs text-gray-500 mt-1">
+                           {new Date(msg.createdAt || Date.now()).toLocaleTimeString()}
+                        </span>
+                     </div>
+                  );
+               })
             )}
+            <div ref={messagesRef} />
          </div>
 
          <div className="flex gap-2">
@@ -127,6 +214,7 @@ export default function BuyerChatPage() {
                onChange={(e) => setMessage(e.target.value)}
                placeholder="Type your message..."
                className="flex-1 border rounded-lg p-2 focus:outline-none"
+               onKeyDown={(e) => e.key === "Enter" && handleSend()}
             />
             <button
                onClick={handleSend}

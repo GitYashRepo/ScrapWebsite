@@ -18,6 +18,7 @@ export async function GET(req) {
     return NextResponse.json({
       buyer: session.buyer,
       product: session.product,
+      sessionId: session._id,
     });
   } catch (err) {
     console.error(err);

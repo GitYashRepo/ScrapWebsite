@@ -14,8 +14,6 @@ export async function GET(req) {
       .populate("product")
       .sort({ updatedAt: -1 });
 
-    console.log("🔍 Found sessions:", sessions.length);
-
     const buyersMap = {};
     sessions.forEach((s) => {
       const b = s.buyer;
