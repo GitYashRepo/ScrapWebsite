@@ -38,7 +38,7 @@ export default function SellerDashboard() {
 
    // 🔹 Subscription checker
    const checkSubscription = async () => {
-      if (!session?.user?._id) {
+      if (!session?.user?.id) {
          alert("Please log in first.");
          return false;
       }
@@ -46,7 +46,11 @@ export default function SellerDashboard() {
       const res = await fetch("/api/subscription/check", {
          method: "POST",
          headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({ userId: session.user._id }),
+         body: JSON.stringify({
+            userId: session.user.id,
+            userType: "Seller",
+         }),
+         cache: "no-store",
       });
 
       const data = await res.json();

@@ -10,23 +10,39 @@ export async function POST(req) {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = body;
 
     const sign = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .createHmac("sha256", process.env.NEXT_PUBLIC_RAZORPAY_KEY_SECRET)
       .update(razorpay_order_id + "|" + razorpay_payment_id)
       .digest("hex");
 
     if (sign !== razorpay_signature)
       return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
 
-    const subscription = await Subscription.findOneAndUpdate(
-      { orderId: razorpay_order_id },
-      {
-        status: "active",
-        paymentId: razorpay_payment_id,
-        startDate: new Date(),
-        endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // default 1 month validity
-      },
-      { new: true }
-    );
+    // 🔍 Find subscription by orderId
+    const subscription = await Subscription.findOne({ orderId: razorpay_order_id });
+    if (!subscription)
+      return NextResponse.json({ error: "Subscription not found" }, { status: 404 });
+
+    // 🕓 Calculate start and end dates based on plan duration (month-accurate)
+    const startDate = new Date();
+    const endDate = new Date(startDate);
+
+    if (subscription.planName.includes("quarterly")) {
+      endDate.setMonth(endDate.getMonth() + 3);
+    } else if (subscription.planName.includes("halfyear")) {
+      endDate.setMonth(endDate.getMonth() + 6);
+    } else if (subscription.planName.includes("yearly")) {
+      endDate.setFullYear(endDate.getFullYear() + 1);
+    } else {
+      // default → monthly
+      endDate.setMonth(endDate.getMonth() + 1);
+    }
+
+    // ✅ Mark subscription active
+    subscription.status = "active";
+    subscription.paymentId = razorpay_payment_id;
+    subscription.startDate = startDate;
+    subscription.endDate = endDate;
+    await subscription.save();
 
     return NextResponse.json({ message: "Payment verified", subscription });
   } catch (err) {
