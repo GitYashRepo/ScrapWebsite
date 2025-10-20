@@ -12,6 +12,8 @@ export default function SellerSubscriptionPage() {
    const [loading, setLoading] = useState(false);
    const [activeSub, setActiveSub] = useState(null);
    const [checking, setChecking] = useState(true);
+   const [sellerInfo, setSellerInfo] = useState(null);
+
 
    const plans = [
       { id: "seller_monthly", label: "1 Month", price: 2500 },
@@ -19,6 +21,24 @@ export default function SellerSubscriptionPage() {
       { id: "seller_halfyear", label: "6 Months", price: 10000 },
       { id: "seller_yearly", label: "1 Year", price: 15000 },
    ];
+
+   // ✅ Fetch seller details
+   useEffect(() => {
+      if (!session?.user?.id) return;
+
+      const fetchSellerInfo = async () => {
+         try {
+            const res = await fetch(`/api/seller/${session.user.id}`);
+            if (!res.ok) throw new Error("Failed to fetch seller details");
+            const data = await res.json();
+            setSellerInfo(data);
+         } catch (err) {
+            console.error("Error fetching seller info:", err);
+         }
+      };
+
+      fetchSellerInfo();
+   }, [session]);
 
 
    useEffect(() => {
@@ -123,14 +143,37 @@ export default function SellerSubscriptionPage() {
 
    if (activeSub) {
       return (
-         <div className="p-10 text-center">
-            <h1 className="text-3xl font-bold mb-6 text-blue-700">Your Active Subscription</h1>
+         <div className="flex flex-col p-10 items-center">
+            {/* ✅ Seller Info Section */}
+            {sellerInfo && (
+               <div className="mb-8 border border-gray-300 rounded-2xl shadow-lg p-6 bg-white max-w-md mx-auto text-left">
+                  <h2 className="text-2xl font-bold mb-3 text-blue-700">Seller Details</h2>
+                  <p><strong>Store Name:</strong> {sellerInfo.storeName}</p>
+                  <p><strong>Owner Name:</strong> {sellerInfo.ownerName}</p>
+                  <p><strong>Email:</strong> {sellerInfo.email}</p>
+                  <p><strong>Phone:</strong> {sellerInfo.phone}</p>
+                  <p><strong>Address:</strong> {sellerInfo.address}, {sellerInfo.city}, {sellerInfo.state} - {sellerInfo.pinCode}</p>
+               </div>
+            )}
+            {/* ✅ Active Subscription */}
             <div className="border border-gray-300 rounded-2xl shadow-lg p-6 bg-white max-w-md mx-auto">
-               <p className="text-lg font-semibold">Plan: {activeSub.planName.replace("seller_", "").toUpperCase()}</p>
-               <p>Status: <span className="text-green-600 font-bold">{activeSub.status}</span></p>
+               <h1 className="text-3xl font-bold mb-6 text-blue-700">
+                  Your Active Subscription
+               </h1>
+               <p className="text-lg font-semibold">
+                  Plan: {activeSub.planName.replace("seller_", "").toUpperCase()}
+               </p>
+               <p>
+                  Status:{" "}
+                  <span className="text-green-600 font-bold">
+                     {activeSub.status}
+                  </span>
+               </p>
                <p>Start: {new Date(activeSub.startDate).toLocaleDateString()}</p>
                <p>End: {new Date(activeSub.endDate).toLocaleDateString()}</p>
-               <p className="mt-4 text-gray-500 text-sm">You can renew after this subscription ends.</p>
+               <p className="mt-4 text-gray-500 text-sm">
+                  You can renew after this subscription ends.
+               </p>
             </div>
          </div>
       );
