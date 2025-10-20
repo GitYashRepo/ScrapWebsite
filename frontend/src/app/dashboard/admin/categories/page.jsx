@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner"
+
 
 export default function AdminCategoriesPage() {
    const [categories, setCategories] = useState([]);
@@ -35,11 +37,11 @@ export default function AdminCategoriesPage() {
 
          const data = await res.json();
          if (res.ok) {
-            alert("✅ Category created successfully!");
+            toast.success("✅ Category created successfully!");
             setForm({ name: "", description: "", image: "" });
             setRefresh(!refresh);
          } else {
-            alert(`❌ ${data.error}`);
+            toast.error(`❌ ${data.error}`);
          }
       } catch (err) {
          console.error("Error:", err);
@@ -55,10 +57,10 @@ export default function AdminCategoriesPage() {
          const res = await fetch(`/api/category/${id}`, { method: "DELETE" });
          const data = await res.json();
          if (res.ok) {
-            alert("🗑️ Category deleted");
+            toast.success("🗑️ Category deleted");
             setRefresh(!refresh);
          } else {
-            alert(`❌ ${data.error}`);
+            toast.error(`❌ ${data.error}`);
          }
       } catch (err) {
          console.error("Delete error:", err);

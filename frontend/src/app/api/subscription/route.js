@@ -11,17 +11,32 @@ export async function POST(req) {
 
     const plans = {
       seller_monthly: 2500,
-      seller_quarterly: 7000,
-      seller_halfyear: 13500,
-      seller_yearly: 25000,
+      seller_quarterly: 5000,
+      seller_halfyear: 10000,
+      seller_yearly: 15000,
       buyer_monthly: 500,
-      buyer_quarterly: 1350,
-      buyer_halfyear: 2750,
-      buyer_yearly: 5500,
+      buyer_quarterly: 1300,
+      buyer_halfyear: 2500,
+      buyer_yearly: 5000,
     };
 
     if (!plans[planName]) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
+    }
+
+    // 🔍 Check if user already has an active subscription
+    const existing = await Subscription.findOne({
+      userId,
+      userType,
+      status: "active",
+      endDate: { $gte: new Date() },
+    });
+
+    if (existing) {
+      return NextResponse.json(
+        { error: "You already have an active subscription", active: true, subscription: existing },
+        { status: 400 }
+      );
     }
 
     const order = await razorpay.orders.create({

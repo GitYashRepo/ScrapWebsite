@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Script from "next/script";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner"
+
 
 export default function BuyerSubscriptionPage() {
    const { data: session } = useSession();
@@ -10,14 +12,14 @@ export default function BuyerSubscriptionPage() {
 
    const plans = [
       { id: "buyer_monthly", label: "1 Month", price: 500 },
-      { id: "buyer_quarterly", label: "3 Months", price: 1350 },
-      { id: "buyer_halfyear", label: "6 Months", price: 2750 },
-      { id: "buyer_yearly", label: "1 Year", price: 5500 },
+      { id: "buyer_quarterly", label: "3 Months", price: 1300 },
+      { id: "buyer_halfyear", label: "6 Months", price: 2500 },
+      { id: "buyer_yearly", label: "1 Year", price: 5000 },
    ];
 
    const handleSubscribe = async (planId) => {
       if (!session?.user?.id) {
-         alert("Please log in first.");
+         toast.info("Please log in first.");
          return;
       }
 
@@ -56,10 +58,10 @@ export default function BuyerSubscriptionPage() {
 
                const verifyData = await verifyRes.json();
                if (verifyRes.ok) {
-                  alert("✅ Subscription Activated Successfully!");
+                  toast.success("✅ Subscription Activated Successfully!");
                   window.location.href = "/dashboard/buyer";
                } else {
-                  alert("❌ Payment Verification Failed!");
+                  toast.warning("❌ Payment Verification Failed!");
                   console.error(verifyData);
                }
             },
@@ -74,7 +76,7 @@ export default function BuyerSubscriptionPage() {
          rzp.open();
       } catch (error) {
          console.error(error);
-         alert("Something went wrong. Please try again.");
+         toast.error("Something went wrong. Please try again.");
       } finally {
          setLoading(false);
       }

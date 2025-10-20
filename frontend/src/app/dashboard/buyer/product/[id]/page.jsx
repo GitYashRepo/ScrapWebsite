@@ -4,16 +4,23 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Spinner from "@/components/Loader/spinner/spinner";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner"
+
 
 const ProductDetails = () => {
    const { id } = useParams();
    const router = useRouter();
-   const { data: session } = useSession(); // ✅ this gives you logged-in user info
+   const { data: session } = useSession();
    const buyerId = session?.user?.id;
    const [product, setProduct] = useState(null);
    const [loading, setLoading] = useState(true);
    const [error, setError] = useState("");
-   const [buying, setBuying] = useState(false); // 👈 track Buy Now loading
+   const [buying, setBuying] = useState(false);
+
+   // 🔹 NEW: subscription state
+   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+   const [checkingSub, setCheckingSub] = useState(true);
+
 
 
    useEffect(() => {
@@ -33,12 +40,42 @@ const ProductDetails = () => {
       if (id) fetchProduct();
    }, [id]);
 
+   // ✅ Check Buyer Subscription
+   useEffect(() => {
+      const checkSubscription = async () => {
+         if (!buyerId) return;
+         try {
+            setCheckingSub(true);
+            const res = await fetch("/api/subscription/check", {
+               method: "POST",
+               headers: { "Content-Type": "application/json" },
+               body: JSON.stringify({ userId: buyerId, userType: "Buyer" }),
+            });
+            const data = await res.json();
+            setHasActiveSubscription(data.active);
+         } catch (error) {
+            console.error("Subscription check failed:", error);
+         } finally {
+            setCheckingSub(false);
+         }
+      };
+      checkSubscription();
+   }, [buyerId]);
+
    // 🧩 Handle Buy Now Click —> open chat session
    const handleBuyNow = async () => {
       if (!buyerId) {
-         alert("You must be signed in as a buyer to start a chat.");
+         toast.info("You must be signed in as a buyer to start a chat.");
          return;
       }
+
+      if (!hasActiveSubscription) {
+         toast.info("Please subscribe to view seller details and contact the seller.");
+         router.push("/dashboard/buyer/subscription");
+         return;
+      }
+
+      setBuying(true);
       const chatUrl = `/dashboard/buyer/chat/${product._id}`;
       router.push(chatUrl);
    };
@@ -132,19 +169,35 @@ const ProductDetails = () => {
                         )}
                      </div>
 
-                     {/* 🧑‍🌾 Seller Info */}
-                     <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-6">
-                        <h2 className="text-lg font-semibold mb-2">Seller Details</h2>
-                        <p><span className="font-medium">Store:</span> {product.seller?.storeName}</p>
-                        <p><span className="font-medium">Owner:</span> {product.seller?.ownerName}</p>
-                        <p><span className="font-medium">Email:</span> {product.seller?.email}</p>
-                        <p><span className="font-medium">Phone:</span> {product.seller?.phone}</p>
-                        <p>
-                           <span className="font-medium">Address:</span>{" "}
-                           {product.seller?.address}, {product.seller?.city},{" "}
-                           {product.seller?.state} - {product.seller?.pinCode}
-                        </p>
-                     </div>
+                     {/* 🧑‍🌾 Seller Info - visible only for active subscribers */}
+                     {!checkingSub && hasActiveSubscription ? (
+                        <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-6">
+                           <h2 className="text-lg font-semibold mb-2">Seller Details</h2>
+                           <p><span className="font-medium">Store:</span> {product.seller?.storeName}</p>
+                           <p><span className="font-medium">Owner:</span> {product.seller?.ownerName}</p>
+                           <p><span className="font-medium">Email:</span> {product.seller?.email}</p>
+                           <p><span className="font-medium">Phone:</span> {product.seller?.phone}</p>
+                           <p>
+                              <span className="font-medium">Address:</span>{" "}
+                              {product.seller?.address}, {product.seller?.city},{" "}
+                              {product.seller?.state} - {product.seller?.pinCode}
+                           </p>
+                        </div>
+                     ) : (
+                        !checkingSub && (
+                           <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 text-center text-sm">
+                              <p className="text-red-600 font-medium">
+                                 🔒 Seller information is available only for subscribed buyers.
+                              </p>
+                              <button
+                                 onClick={() => router.push("/dashboard/buyer/subscription")}
+                                 className="mt-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                              >
+                                 View Subscription Plans
+                              </button>
+                           </div>
+                        )
+                     )}
 
                      {/* 🛒 Buttons */}
                      <div className="flex gap-3">
@@ -153,12 +206,12 @@ const ProductDetails = () => {
                            disabled={buying}
                            className="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 disabled:opacity-60"
                         >
-                           {buying ? "Opening Chat..." : "Buy Now"}
+                           {buying ? "Opening Chat..." : "Buy"}
                         </button>
 
                         {product.isAuction && (
                            <button
-                              onClick={() => alert("Pitch feature coming soon!")}
+                              onClick={() => toast.info("Pitch feature coming soon!")}
                               className="flex-1 bg-yellow-500 text-white py-3 rounded-lg hover:bg-yellow-600"
                            >
                               Pitch Bid

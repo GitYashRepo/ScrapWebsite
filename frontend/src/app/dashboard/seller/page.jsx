@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import SkeletonCard from "@/components/Loader/skeletoncard/skeleton";
+import Link from "next/link";
+import { toast } from "sonner"
+
 
 export default function SellerDashboard() {
    const { data: session } = useSession();
@@ -39,7 +42,7 @@ export default function SellerDashboard() {
    // 🔹 Subscription checker
    const checkSubscription = async () => {
       if (!session?.user?.id) {
-         alert("Please log in first.");
+         toast.info("Please log in first.");
          return false;
       }
 
@@ -107,6 +110,12 @@ export default function SellerDashboard() {
                >
                   💬 Chats
                </button>
+               <Link
+                  href={"/dashboard/seller/subscription"}
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+               >
+                  Active Subscription
+               </Link>
             </div>
          </div>
 

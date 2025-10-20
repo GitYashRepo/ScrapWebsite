@@ -1,24 +1,54 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Script from "next/script";
 import { signIn } from "next-auth/react";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner"
+
 
 export default function SellerSubscriptionPage() {
    const { data: session } = useSession();
    const [loading, setLoading] = useState(false);
+   const [activeSub, setActiveSub] = useState(null);
+   const [checking, setChecking] = useState(true);
 
    const plans = [
       { id: "seller_monthly", label: "1 Month", price: 2500 },
-      { id: "seller_quarterly", label: "3 Months", price: 7000 },
-      { id: "seller_halfyear", label: "6 Months", price: 13500 },
-      { id: "seller_yearly", label: "1 Year", price: 25000 },
+      { id: "seller_quarterly", label: "3 Months", price: 5000 },
+      { id: "seller_halfyear", label: "6 Months", price: 10000 },
+      { id: "seller_yearly", label: "1 Year", price: 15000 },
    ];
+
+
+   useEffect(() => {
+      if (!session?.user?.id) return;
+
+      const checkSubscription = async () => {
+         try {
+            const res = await fetch("/api/subscription/check", {
+               method: "POST",
+               headers: { "Content-Type": "application/json" },
+               body: JSON.stringify({
+                  userId: session.user.id,
+                  userType: "Seller",
+               }),
+            });
+            const data = await res.json();
+            if (data.active) setActiveSub(data.subscription);
+         } catch (err) {
+            console.error("Error checking subscription:", err);
+         } finally {
+            setChecking(false);
+         }
+      };
+
+      checkSubscription();
+   }, [session]);
 
    const handleSubscribe = async (planId) => {
       if (!session?.user?.id) {
-         alert("Please log in first.");
+         toast.info("Please log in first.");
          return;
       }
 
@@ -37,7 +67,13 @@ export default function SellerSubscriptionPage() {
          });
 
          const data = await res.json();
-         if (!res.ok || !data.order) throw new Error("Failed to create order");
+         if (!res.ok) {
+            if (data.active && data.subscription) {
+               setActiveSub(data.subscription);
+            }
+            toast.error(data.error || "Subscription failed.");
+            return;
+         }
 
          // 2️⃣ Initialize Razorpay checkout
          const options = {
@@ -57,12 +93,12 @@ export default function SellerSubscriptionPage() {
 
                const verifyData = await verifyRes.json();
                if (verifyRes.ok) {
-                  alert("✅ Subscription Activated Successfully!");
+                  toast.success("✅ Subscription Activated Successfully!");
                   // 🔄 Refresh NextAuth session
                   await signIn(undefined, { redirect: false });
                   window.location.href = "/dashboard/seller";
                } else {
-                  alert("❌ Payment Verification Failed!");
+                  toast.error("❌ Payment Verification Failed!");
                   console.error(verifyData);
                }
             },
@@ -77,11 +113,28 @@ export default function SellerSubscriptionPage() {
          rzp.open();
       } catch (error) {
          console.error(error);
-         alert("Something went wrong. Please try again.");
+         toast.error("Something went wrong. Please try again.");
       } finally {
          setLoading(false);
       }
    };
+
+   if (checking) return <div className="p-10 text-center text-gray-600">Checking subscription...</div>;
+
+   if (activeSub) {
+      return (
+         <div className="p-10 text-center">
+            <h1 className="text-3xl font-bold mb-6 text-blue-700">Your Active Subscription</h1>
+            <div className="border border-gray-300 rounded-2xl shadow-lg p-6 bg-white max-w-md mx-auto">
+               <p className="text-lg font-semibold">Plan: {activeSub.planName.replace("seller_", "").toUpperCase()}</p>
+               <p>Status: <span className="text-green-600 font-bold">{activeSub.status}</span></p>
+               <p>Start: {new Date(activeSub.startDate).toLocaleDateString()}</p>
+               <p>End: {new Date(activeSub.endDate).toLocaleDateString()}</p>
+               <p className="mt-4 text-gray-500 text-sm">You can renew after this subscription ends.</p>
+            </div>
+         </div>
+      );
+   }
 
    return (
       <div className="p-10">
