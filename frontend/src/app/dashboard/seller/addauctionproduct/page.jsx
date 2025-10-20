@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getSession } from "next-auth/react";
+import { toast } from "sonner"
+
 
 export default function AddAuctionProduct() {
    const router = useRouter();
@@ -33,7 +35,7 @@ export default function AddAuctionProduct() {
 
       const session = await getSession();
       if (!session || session.user.role !== "seller") {
-         alert("You must be logged in as seller");
+         toast.info("You must be logged in as seller");
          setLoading(false);
          return;
       }
@@ -42,13 +44,13 @@ export default function AddAuctionProduct() {
       const startDate = new Date(form.auctionStart);
       const endDate = new Date(form.auctionEnd);
       if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-         alert("Please provide valid auction start and end dates");
+         toast.info("Please provide valid auction start and end dates");
          setLoading(false);
          return;
       }
 
       if (endDate <= startDate) {
-         alert("Auction end date must be after start date");
+         toast.info("Auction end date must be after start date");
          setLoading(false);
          return;
       }
@@ -78,10 +80,10 @@ export default function AddAuctionProduct() {
       setLoading(false);
 
       if (res.ok) {
-         alert("Auction product created successfully!");
+         toast.success("Auction product created successfully!");
          router.push("/dashboard/seller");
       } else {
-         alert(data.error || "Something went wrong!");
+         toast.error(data.error || "Something went wrong!");
       }
    };
 

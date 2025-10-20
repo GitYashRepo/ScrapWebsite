@@ -78,7 +78,15 @@ export default function SignupPage() {
                <>
                   <input
                      name="name"
-                     placeholder="Full Name"
+                     placeholder="Contact Person Name"
+                     required
+                     onChange={handleChange}
+                     className="w-full p-2 border rounded"
+                  />
+                  <input
+                     name="phone"
+                     placeholder="Mobile Number"
+                     type="number"
                      required
                      onChange={handleChange}
                      className="w-full p-2 border rounded"
@@ -87,22 +95,6 @@ export default function SignupPage() {
                      name="email"
                      placeholder="Email"
                      type="email"
-                     required
-                     onChange={handleChange}
-                     className="w-full p-2 border rounded"
-                  />
-                  <input
-                     name="companyName"
-                     placeholder="Company Name"
-                     required
-                     onChange={handleChange}
-                     className="w-full p-2 border rounded"
-                  />
-                  <input
-                     name="gst"
-                     placeholder="GST Number (15 digits)"
-                     minLength={15}
-                     maxLength={15}
                      required
                      onChange={handleChange}
                      className="w-full p-2 border rounded"
@@ -122,13 +114,6 @@ export default function SignupPage() {
                      className="w-full p-2 border rounded"
                   />
                   <input
-                     name="state"
-                     placeholder="State"
-                     required
-                     onChange={handleChange}
-                     className="w-full p-2 border rounded"
-                  />
-                  <input
                      name="pinCode"
                      placeholder="Pincode"
                      type="number"
@@ -143,14 +128,6 @@ export default function SignupPage() {
                      className="w-full p-2 border rounded"
                      inputMode="numeric"
                      pattern="\d{6}"
-                  />
-                  <input
-                     name="phone"
-                     placeholder="Phone Number"
-                     type="number"
-                     required
-                     onChange={handleChange}
-                     className="w-full p-2 border rounded"
                   />
                   <input
                      name="password"

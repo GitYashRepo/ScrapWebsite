@@ -52,7 +52,7 @@ export default function BuyerChatPage() {
       if (!buyerId || !sellerId || !productId) return;
 
       if (!socket) {
-         socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+         socket = io("http://localhost:4040", {
             transports: ["websocket", "polling"],
          });
       }

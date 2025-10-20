@@ -2,8 +2,8 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { useSession, signIn, signOut } from "next-auth/react";
-import { Menu, Search, ShoppingCart, User, ChevronDown, Store, LogOut } from "lucide-react"
+import { useSession, signOut } from "next-auth/react";
+import { Menu, Search, User, ChevronDown, Store, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,76 +17,134 @@ import {
    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { useRouter } from "next/navigation";
+import {
+   Command,
+   CommandGroup,
+   CommandItem,
+   CommandList,
+   CommandEmpty,
+} from "@/components/ui/command";
+import { toast } from "sonner"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export function Navbar() {
    const [category, setCategory] = React.useState("all");
+   const [categories, setCategories] = React.useState([]);
    const { data: session, status } = useSession();
 
-   const SearchBar = () => (
-      <form
-         className="flex w-[100%] justify-center items-stretch gap-2"
-         onSubmit={(e) => e.preventDefault()}
-         role="search"
-         aria-label="Product search"
-      >
-         <div className="flex w-[100%] items-stretch gap-2 rounded-md bg-background">
-            <Input
-               className="flex-1 border-none"
-               placeholder="Search products"
-               aria-label="Search products"
-            />
+
+   // ✅ Fetch all categories
+   React.useEffect(() => {
+      const fetchCategories = async () => {
+         try {
+            const res = await fetch("/api/category");
+            const data = await res.json();
+            setCategories(data);
+         } catch (error) {
+            console.error("Error fetching categories:", error);
+         }
+      };
+      fetchCategories();
+   }, []);
+
+   const SearchBar = () => {
+      const [searchTerm, setSearchTerm] = React.useState("");
+      const [filteredCategories, setFilteredCategories] = React.useState([]);
+      const [open, setOpen] = React.useState(false);
+      const [category, setCategory] = React.useState("all");
+      const router = useRouter();
+
+      React.useEffect(() => {
+         if (searchTerm.trim() === "") {
+            setFilteredCategories([]);
+         } else {
+            const matches = categories.filter((cat) =>
+               cat.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            setFilteredCategories(matches);
+         }
+      }, [searchTerm, categories]);
+
+      const handleSearch = (e) => {
+         e.preventDefault();
+         if (filteredCategories.length > 0) {
+            // Navigate to first matched category
+            router.push(`/categories/${filteredCategories[0]._id}`);
+         } else {
+            toast.error("No Category Available!");
+         }
+      };
+
+      return (
+         <form
+            className="flex w-[100%] justify-center items-stretch gap-2"
+            onSubmit={handleSearch}
+         >
+            <Popover open={open} onOpenChange={setOpen}>
+               <PopoverTrigger asChild>
+                  <div className="relative w-full">
+                     <Input
+                        value={searchTerm}
+                        onChange={(e) => {
+                           setSearchTerm(e.target.value);
+                           setOpen(true);
+                        }}
+                        placeholder="Search categories"
+                        className="w-full"
+                     />
+                     <Search className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
+                  </div>
+               </PopoverTrigger>
+
+               <PopoverContent
+                  className="w-[var(--radix-popover-trigger-width)] p-0"
+                  align="start"
+               >
+                  <Command>
+                     <CommandList>
+                        <CommandEmpty>No categories found.</CommandEmpty>
+                        <CommandGroup>
+                           {filteredCategories.map((cat) => (
+                              <CommandItem
+                                 key={cat._id}
+                                 value={cat.name}
+                                 onSelect={() => {
+                                    router.push(`/categories/${cat._id}`);
+                                    setOpen(false);
+                                 }}
+                              >
+                                 {cat.name}
+                              </CommandItem>
+                           ))}
+                        </CommandGroup>
+                     </CommandList>
+                  </Command>
+               </PopoverContent>
+            </Popover>
+
             <Select value={category} onValueChange={setCategory}>
                <SelectTrigger className="w-auto">
                   <SelectValue placeholder="All categories" />
                </SelectTrigger>
                <SelectContent>
                   <SelectItem value="all">All categories</SelectItem>
-                  <SelectItem value="metals">Metals</SelectItem>
-                  <SelectItem value="plastics">Plastics</SelectItem>
-                  <SelectItem value="paper">Paper</SelectItem>
-                  <SelectItem value="electronics">Electronics</SelectItem>
+                  {categories.map((cat) => (
+                     <SelectItem key={cat._id} value={cat.name.toLowerCase()}>
+                        {cat.name}
+                     </SelectItem>
+                  ))}
                </SelectContent>
             </Select>
-            <Button type="submit" variant="default" className="shrink-0">
-               <Search className="h-4 w-4" />
-            </Button>
-         </div>
-      </form>
-   )
 
-   // const AuthCart = () => (
-   //    <div className="flex items-center gap-4">
-   //       <Link href="/signup" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-   //          <User className="h-4 w-4" aria-hidden="true" />
-   //          <span className="flex flex-col">
-   //             <span>Seller</span>
-   //             <span>Sign In/ Register</span>
-   //          </span>
-   //       </Link>
-   //       <Link href="/signup" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-   //          <User className="h-4 w-4" aria-hidden="true" />
-   //          <span className="flex flex-col">
-   //             <span>Buyer</span>
-   //             <span>Sign In/ Register</span>
-   //          </span>
-   //       </Link>
-   //       <Link
-   //          href="/cart"
-   //          className="relative inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-   //          aria-label="Cart"
-   //       >
-   //          <ShoppingCart className="h-5 w-5" aria-hidden="true" />
-   //          <span>Cart</span>
-   //          <span
-   //             aria-label="Cart items"
-   //             className="absolute -right-2 -top-2 rounded-full bg-primary px-1.5 py-0.5 text-[10px] leading-none text-primary-foreground"
-   //          >
-   //             0
-   //          </span>
-   //       </Link>
-   //    </div>
-   // )
-   const AuthCart = () => {
+            <Button type="submit" className="shrink-0">
+               <Search className="h-4 w-4 mr-1" /> Search
+            </Button>
+         </form>
+      )
+   }
+
+   const UserProfile = () => {
       if (status === "loading") {
          return <div className="text-sm text-muted-foreground">Loading...</div>;
       }
@@ -118,6 +176,9 @@ export function Navbar() {
                      <DropdownMenuItem asChild>
                         <Link href={`/dashboard/${role}`}>Dashboard</Link>
                      </DropdownMenuItem>
+                     <DropdownMenuItem asChild>
+                        <Link href={`/enquiries`}>Enquiries</Link>
+                     </DropdownMenuItem>
                      <DropdownMenuItem
                         onClick={() => signOut({ callbackUrl: "/" })}
                         className="flex items-center gap-2 text-red-600"
@@ -127,18 +188,6 @@ export function Navbar() {
                      </DropdownMenuItem>
                   </DropdownMenuContent>
                </DropdownMenu>
-
-               <Link
-                  href="/cart"
-                  className="relative inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-                  aria-label="Cart"
-               >
-                  <ShoppingCart className="h-5 w-5" aria-hidden="true" />
-                  <span>Cart</span>
-                  <span className="absolute -right-2 -top-2 rounded-full bg-primary px-1.5 py-0.5 text-[10px] leading-none text-primary-foreground">
-                     0
-                  </span>
-               </Link>
             </div>
          );
       }
@@ -168,22 +217,20 @@ export function Navbar() {
                <DropdownMenuContent className="">
                   <DropdownMenuLabel>Browse categories</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="gap-2">
-                     <Store className="h-4 w-4" /> Metals
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="gap-2">
-                     <Store className="h-4 w-4" /> Plastics
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="gap-2">
-                     <Store className="h-4 w-4" /> Paper
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="gap-2">
-                     <Store className="h-4 w-4" /> Electronics
-                  </DropdownMenuItem>
+                  {categories.map((cat) => (
+                     <DropdownMenuItem key={cat._id} asChild>
+                        <Link href={`/categories/${cat._id}`} className="flex items-center gap-2">
+                           <Store className="h-4 w-4" /> {cat.name}
+                        </Link>
+                     </DropdownMenuItem>
+                  ))}
                </DropdownMenuContent>
             </DropdownMenu>
 
-            <Link href="/dashboard/buyer/auctions" className="text-sm text-foreground hover:underline">
+            <Link href="/shop" className="text-sm text-foreground hover:underline">
+               Shop
+            </Link>
+            <Link href="/auctions" className="text-sm text-foreground hover:underline">
                Auctions
             </Link>
          </div>
@@ -248,7 +295,7 @@ export function Navbar() {
                </div>
 
                <div className="pt-4">
-                  <AuthCart />
+                  <UserProfile />
                </div>
             </div>
          </SheetContent>
@@ -276,7 +323,7 @@ export function Navbar() {
                </div>
 
                <div className="hidden md:block">
-                  <AuthCart />
+                  <UserProfile />
                </div>
             </div>
             {/* Bottom navigation */}

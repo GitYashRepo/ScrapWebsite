@@ -1,12 +1,22 @@
 "use client";
 
 import SkeletonCard from "@/components/Loader/skeletoncard/skeleton";
+import { useSession } from "next-auth/react";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner"
 
 const AuctionProductsPage = () => {
+   const { id } = useParams();
+   const router = useRouter();
+   const { data: session } = useSession();
+   const buyerId = session?.user?.id;
    const [auctions, setAuctions] = useState([]);
    const [loading, setLoading] = useState(false);
    const [message, setMessage] = useState("");
+   const [buying, setBuying] = useState(false);
+
+   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
 
    useEffect(() => {
       const fetchAuctions = async () => {
@@ -27,6 +37,25 @@ const AuctionProductsPage = () => {
       };
       fetchAuctions();
    }, []);
+
+   // ✅ Check Buyer Subscription
+   useEffect(() => {
+      const checkSubscription = async () => {
+         if (!buyerId) return;
+         try {
+            const res = await fetch("/api/subscription/check", {
+               method: "POST",
+               headers: { "Content-Type": "application/json" },
+               body: JSON.stringify({ userId: buyerId, userType: "Buyer" }),
+            });
+            const data = await res.json();
+            setHasActiveSubscription(data.active);
+         } catch (error) {
+            console.error("Subscription check failed:", error);
+         }
+      };
+      checkSubscription();
+   }, [buyerId]);
 
    const handleAction = async (productId, actionType) => {
       setLoading(true);
@@ -50,6 +79,22 @@ const AuctionProductsPage = () => {
       } finally {
          setLoading(false);
       }
+   };
+
+   // 🧩 Handle Buy Now Click —> open chat session
+   const handlePitching = async (productId) => {
+      if (!buyerId) {
+         toast.error("You must be signed in as a buyer to start a chat.");
+         return;
+      }
+      if (!hasActiveSubscription) {
+         toast.error("Please subscribe to view seller details and contact the seller.");
+         router.push("/dashboard/buyer/subscription");
+         return;
+      }
+      setBuying(true);
+      const chatUrl = `/dashboard/buyer/chat/${productId}`;
+      router.push(chatUrl);
    };
 
    return (
@@ -84,7 +129,10 @@ const AuctionProductsPage = () => {
                         />
                      )}
 
-                     <h2 className="font-semibold text-lg">{product.name}</h2>
+                     <div className="flex flex-row justify-between items-center">
+                        <h2 className="font-semibold text-lg">{product.name}</h2>
+                        <p className="font-semibold">{product.quantity} Kg</p>
+                     </div>
                      <p className="text-sm text-gray-600 line-clamp-2">
                         {product.description}
                      </p>

@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getSession } from "next-auth/react";
+import { toast } from "sonner"
+
 
 export default function AddProduct() {
    const router = useRouter();
@@ -30,7 +32,7 @@ export default function AddProduct() {
 
       const session = await getSession();
       if (!session || session.user.role !== "seller") {
-         alert("You must be logged in as seller");
+         toast.info("You must be logged in as seller");
          setLoading(false);
          return;
       }
@@ -47,10 +49,10 @@ export default function AddProduct() {
       setLoading(false);
 
       if (res.ok) {
-         alert("Product added successfully!");
+         toast.success("Product added successfully!");
          router.push("/dashboard/seller");
       } else {
-         alert(data.error || "Something went wrong!");
+         toast.error(data.error || "Something went wrong!");
       }
    };
 

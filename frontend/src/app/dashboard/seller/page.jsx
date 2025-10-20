@@ -2,14 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import SkeletonCard from "@/components/Loader/skeletoncard/skeleton";
+import Link from "next/link";
+import { toast } from "sonner"
+
 
 export default function SellerDashboard() {
    const { data: session } = useSession();
    const [products, setProducts] = useState([]);
    const [auctionProducts, setAuctionProducts] = useState([]);
    const [loading, setLoading] = useState(true);
+   const router = useRouter();
 
    const fetchProducts = async () => {
       try {
@@ -35,6 +39,44 @@ export default function SellerDashboard() {
       fetchProducts();
    }, []);
 
+   // 🔹 Subscription checker
+   const checkSubscription = async () => {
+      if (!session?.user?.id) {
+         toast.info("Please log in first.");
+         return false;
+      }
+
+      const res = await fetch("/api/subscription/check", {
+         method: "POST",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({
+            userId: session.user.id,
+            userType: "Seller",
+         }),
+         cache: "no-store",
+      });
+
+      const data = await res.json();
+      return data.active;
+   };
+
+   const handleRestrictedAction = async (path) => {
+      const isActive = await checkSubscription();
+
+      if (isActive) {
+         router.push(path);
+      } else {
+         if (
+            confirm(
+               "You need an active subscription to access this feature. Purchase a plan now?"
+            )
+         ) {
+            router.push("/dashboard/seller/subscription");
+         }
+      }
+   };
+
+
    const handleDelete = async (id) => {
       if (!confirm("Are you sure you want to delete this product?")) return;
 
@@ -48,23 +90,31 @@ export default function SellerDashboard() {
          <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold">My Products</h1>
             <div className="flex flex-row gap-4">
-               <Link
-                  href="/dashboard/seller/addproduct"
+               <button
+                  onClick={() => handleRestrictedAction("/dashboard/seller/addproduct")}
                   className="bg-blue-600 text-white px-4 py-2 rounded-lg"
                >
                   + Add Product
-               </Link>
-               <Link
-                  href="/dashboard/seller/addauctionproduct"
+               </button>
+
+               <button
+                  onClick={() => handleRestrictedAction("/dashboard/seller/addauctionproduct")}
                   className="bg-purple-600 text-white px-4 py-2 rounded-lg"
                >
                   + Add Auction Product
-               </Link>
-               <Link
-                  href="/dashboard/seller/chat"
+               </button>
+
+               <button
+                  onClick={() => handleRestrictedAction("/dashboard/seller/chat")}
                   className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
                >
                   💬 Chats
+               </button>
+               <Link
+                  href={"/dashboard/seller/subscription"}
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+               >
+                  Active Subscription
                </Link>
             </div>
          </div>

@@ -10,9 +10,18 @@ export async function GET(request) {
   try {
     await connectDB();
 
+    // ✅ Parse query params
+    const { searchParams } = new URL(request.url);
+    const categoryId = searchParams.get("categoryId");
+
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+     // 🟢 Public (unauthenticated) access — allow browsing by category
     if (!token) {
-      return new Response(JSON.stringify({ error: "Unauthorized: Sellers only" }), { status: 403 });
+      const filter = categoryId ? { category: categoryId, status: "available" } : { status: "available" };
+      const publicProducts = await Product.find(filter)
+        .populate("category seller", "name storeName email")
+        .sort({ createdAt: -1 });
+      return new Response(JSON.stringify(publicProducts), { status: 200 });
     }
 
     let products;
@@ -22,15 +31,21 @@ export async function GET(request) {
       products = await Product.find({ seller: token.id })
         .populate("category seller", "name storeName email");
     }
-    // 🔹 If buyer → show available products that are NOT auction
+    // 🔹 Buyer → show available non-auction products
     else if (token.role === "buyer") {
-      products = await Product.find({
+      const filter = {
         status: "available",
         $or: [
           { isAuction: false },
           { isAuction: { $exists: false } },
         ],
-      }).populate("category seller", "name storeName email");
+      };
+
+      if (categoryId) filter.category = categoryId;
+
+      products = await Product.find(filter)
+        .populate("category seller", "name storeName email")
+        .sort({ createdAt: -1 });
     }
     // 🔹 If admin → show all products
     else if (token.role === "admin") {

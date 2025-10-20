@@ -5,6 +5,8 @@ import Footer from "@/components/footer/footer";
 import SideBar from "@/components/sidebar/sidebar";
 import WhatsAppWidget from "@/components/whatsapp/whatsapp";
 import { Providers } from "@/components/Providers/Providers";
+import { Toaster } from "@/components/ui/sonner"
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +35,7 @@ export default function RootLayout({ children }) {
             {children}
             <WhatsAppWidget brandName="KabaadiMandi" phone = '+918003316534' />
             <Footer />
+            <Toaster />
          </Providers>
       </body>
     </html>

@@ -38,8 +38,6 @@ export default function Footer() {
                   <li><a href="/privacy-policy" className="hover:text-foreground transition-colors">Privacy Policy</a></li>
                   <li><a href="/terms-conditions" className="hover:text-foreground transition-colors">Terms & Conditions</a></li>
                   <li><a href="/refund-cancellation" className="hover:text-foreground transition-colors">Refund & Cancellation</a></li>
-                  <li><a href="/shipping-policy" className="hover:text-foreground transition-colors">Shipping Policy</a></li>
-                  <li><a href="/cart" className="hover:text-foreground transition-colors">Your Order</a></li>
                </ul>
             </div>
 
@@ -49,7 +47,7 @@ export default function Footer() {
                <ul className="space-y-2 text-sm">
                   <li><a href="/singin" className="hover:text-foreground transition-colors">Sign in</a></li>
                   <li><a href="/signup" className="hover:text-foreground transition-colors">Create Account</a></li>
-                  <li><a href="/orders" className="hover:text-foreground transition-colors">Orders</a></li>
+                  <li><a href="/enquiries" className="hover:text-foreground transition-colors">Enquiry</a></li>
                </ul>
             </div>
 
@@ -58,8 +56,6 @@ export default function Footer() {
                <h3 className="text-base font-semibold text-foreground mb-3">Company</h3>
                <ul className="space-y-2 text-sm">
                   <li><a href="/about" className="hover:text-foreground transition-colors">About Us</a></li>
-                  <li><a href="/signup" className="hover:text-foreground transition-colors">Become a Seller</a></li>
-                  <li><a href="/signup" className="hover:text-foreground transition-colors">Register a Buyer</a></li>
                </ul>
             </div>
          </div>
