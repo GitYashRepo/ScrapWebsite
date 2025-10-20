@@ -150,12 +150,67 @@ export default function SellerDashboard() {
                               <p className="text-gray-900 font-bold mt-1">
                                  ₹{p.pricePerKg}/kg
                               </p>
-                              <button
-                                 onClick={() => handleDelete(p._id)}
-                                 className="mt-3 bg-red-500 text-white px-3 py-1 rounded"
-                              >
-                                 Delete
-                              </button>
+                              {/* 🔹 Availability Dropdown */}
+                              <div className="mt-3">
+                                 <label className="text-sm text-gray-500 mr-2">Status:</label>
+                                 <select
+                                    value={p.status}
+                                    onChange={async (e) => {
+                                       const newStatus = e.target.value;
+                                       try {
+                                          const res = await fetch(`/api/product/${p._id}`, {
+                                             method: "PATCH",
+                                             headers: { "Content-Type": "application/json" },
+                                             body: JSON.stringify({ status: newStatus }),
+                                          });
+                                          const data = await res.json();
+                                          if (res.ok) {
+                                             toast.success(`✅ Product marked as "${newStatus}"`);
+                                             // Update locally to avoid refetch
+                                             setProducts((prev) =>
+                                                prev.map((prod) =>
+                                                   prod._id === p._id ? { ...prod, status: newStatus } : prod
+                                                )
+                                             );
+                                             setAuctionProducts((prev) =>
+                                                prev.map((prod) =>
+                                                   prod._id === p._id ? { ...prod, status: newStatus } : prod
+                                                )
+                                             );
+                                          } else {
+                                             toast.error(data.error || "Failed to update status");
+                                          }
+                                       } catch (err) {
+                                          toast.error("Error updating status");
+                                       }
+                                    }}
+                                    className={`border rounded px-2 py-1 mt-1 ${p.status === "available"
+                                       ? "bg-green-100 text-green-700"
+                                       : p.status === "out-of-stock"
+                                          ? "bg-yellow-100 text-yellow-700"
+                                          : "bg-red-100 text-red-700"
+                                       }`}
+                                 >
+                                    <option value="available">Available</option>
+                                    <option value="out-of-stock">Out of Stock</option>
+                                    <option value="discontinued">Discontinued</option>
+                                 </select>
+                              </div>
+                              <div className="flex flex-row gap-2">
+                                 <button
+                                    onClick={() => handleDelete(p._id)}
+                                    className="mt-3 bg-red-500 text-white px-3 py-1 rounded"
+                                 >
+                                    Delete
+                                 </button>
+                                 <button
+                                    onClick={() => router.push(`/dashboard/seller/editproduct/${p._id}`)}
+                                    className="mt-3 bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+                                 >
+                                    ✏️ Edit
+                                 </button>
+                              </div>
+
                            </div>
                         ))}
                      </div>
@@ -190,6 +245,48 @@ export default function SellerDashboard() {
                                  ₹{p.pricePerKg}/kg
                               </p>
 
+                              {/* 🔹 Availability Dropdown */}
+                              <div className="mt-3">
+                                 <label className="text-sm text-gray-500 mr-2">Status:</label>
+                                 <select
+                                    value={p.status}
+                                    onChange={async (e) => {
+                                       const newStatus = e.target.value;
+                                       try {
+                                          const res = await fetch(`/api/auctionproduct/${p._id}`, {
+                                             method: "PATCH",
+                                             headers: { "Content-Type": "application/json" },
+                                             body: JSON.stringify({ status: newStatus }),
+                                          });
+                                          const data = await res.json();
+                                          if (res.ok) {
+                                             toast.success(`✅ Auction product marked as "${newStatus}"`);
+                                             setAuctionProducts((prev) =>
+                                                prev.map((prod) =>
+                                                   prod._id === p._id ? { ...prod, status: newStatus } : prod
+                                                )
+                                             );
+                                          } else {
+                                             toast.error(data.error || "Failed to update status");
+                                          }
+                                       } catch (err) {
+                                          toast.error("Error updating auction product status");
+                                       }
+                                    }}
+                                    className={`border rounded px-2 py-1 mt-1 ${p.status === "available"
+                                       ? "bg-green-100 text-green-700"
+                                       : p.status === "out-of-stock"
+                                          ? "bg-yellow-100 text-yellow-700"
+                                          : "bg-red-100 text-red-700"
+                                       }`}
+                                 >
+                                    <option value="available">Available</option>
+                                    <option value="out-of-stock">Out of Stock</option>
+                                    <option value="discontinued">Discontinued</option>
+                                 </select>
+                              </div>
+
+
                               {/* Auction Info */}
                               <p className="text-sm text-gray-700 mt-2">
                                  ⏰ Ends on:{" "}
@@ -197,13 +294,20 @@ export default function SellerDashboard() {
                                     {new Date(p.auctionEnd).toLocaleString()}
                                  </span>
                               </p>
-
-                              <button
-                                 onClick={() => handleDelete(p._id)}
-                                 className="mt-3 bg-red-500 text-white px-3 py-1 rounded"
-                              >
-                                 Delete
-                              </button>
+                              <div className="flex flex-row gap-2">
+                                 <button
+                                    onClick={() => handleDelete(p._id)}
+                                    className="mt-3 bg-red-500 text-white px-3 py-1 rounded"
+                                 >
+                                    Delete
+                                 </button>
+                                 <button
+                                    onClick={() => router.push(`/dashboard/seller/editauctionproduct/${p._id}`)}
+                                    className="mt-3 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+                                 >
+                                    ✏️ Edit
+                                 </button>
+                              </div>
                            </div>
                         ))}
                      </div>

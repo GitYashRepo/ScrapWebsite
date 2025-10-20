@@ -7,25 +7,44 @@ import Spinner from "@/components/Loader/spinner/spinner";
 export default function BuyerDashboardPage() {
    const { data: session, status } = useSession();
    const [buyer, setBuyer] = useState(null);
+   const [subscription, setSubscription] = useState(null);
    const [loading, setLoading] = useState(true);
 
    useEffect(() => {
-      if (status === "authenticated") {
-         const fetchBuyer = async () => {
-            try {
-               const res = await fetch(`/api/buyer/${session.user.email}`);
-               const data = await res.json();
-               setBuyer(data);
-            } catch (err) {
-               console.error("Error fetching buyer:", err);
-            } finally {
-               setLoading(false);
+      const fetchData = async () => {
+         if (status !== "authenticated") {
+            setLoading(false);
+            return;
+         }
+
+         try {
+            // 🔹 Fetch buyer details
+            const res = await fetch(`/api/buyer/${session.user.email}`);
+            const data = await res.json();
+            setBuyer(data);
+
+            // 🔹 Fetch active subscription
+            const subRes = await fetch(`/api/subscription/check`, {
+               method: "POST",
+               headers: { "Content-Type": "application/json" },
+               body: JSON.stringify({
+                  userId: data?._id,
+                  userType: "Buyer",
+               }),
+            });
+
+            const subData = await subRes.json();
+            if (subRes.ok && subData.active) {
+               setSubscription(subData.subscription);
             }
-         };
-         fetchBuyer();
-      } else if (status === "unauthenticated") {
-         setLoading(false);
-      }
+         } catch (err) {
+            console.error("Error fetching data:", err);
+         } finally {
+            setLoading(false);
+         }
+      };
+
+      fetchData();
    }, [status, session]);
 
    if (loading) return <Spinner />;
@@ -44,7 +63,9 @@ export default function BuyerDashboardPage() {
       <div className="max-w-3xl mx-auto p-6">
          <h1 className="text-3xl font-bold mb-6 text-center">Buyer Dashboard</h1>
 
-         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 space-y-4">
+         {/* 🔹 Buyer Details */}
+         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 space-y-4 mb-8">
+            <h2 className="text-xl font-semibold mb-2">Personal Details</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                <div>
                   <p className="text-gray-500 text-sm">Name</p>
@@ -71,6 +92,55 @@ export default function BuyerDashboardPage() {
                   <p className="text-lg font-semibold">{buyer.pinCode}</p>
                </div>
             </div>
+         </div>
+
+         {/* 🔹 Subscription Details */}
+         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 space-y-4">
+            <h2 className="text-xl font-semibold mb-2">Active Subscription</h2>
+
+            {subscription ? (
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                     <p className="text-gray-500 text-sm">Plan Name</p>
+                     <p className="text-lg font-semibold capitalize">
+                        {subscription.planName.replace("buyer_", "").replace("_", " ")}
+                     </p>
+                  </div>
+                  <div>
+                     <p className="text-gray-500 text-sm">Amount</p>
+                     <p className="text-lg font-semibold">
+                        ₹{subscription.amount}
+                     </p>
+                  </div>
+                  <div>
+                     <p className="text-gray-500 text-sm">Start Date</p>
+                     <p className="text-lg font-semibold">
+                        {new Date(subscription.startDate).toLocaleDateString()}
+                     </p>
+                  </div>
+                  <div>
+                     <p className="text-gray-500 text-sm">End Date</p>
+                     <p className="text-lg font-semibold">
+                        {new Date(subscription.endDate).toLocaleDateString()}
+                     </p>
+                  </div>
+                  <div>
+                     <p className="text-gray-500 text-sm">Status</p>
+                     <p
+                        className={`text-lg font-semibold ${subscription.status === "active"
+                              ? "text-green-600"
+                              : "text-red-600"
+                           }`}
+                     >
+                        {subscription.status}
+                     </p>
+                  </div>
+               </div>
+            ) : (
+               <p className="text-gray-500 text-center">
+                  No active subscription found.
+               </p>
+            )}
          </div>
       </div>
    );

@@ -177,7 +177,7 @@ export function Navbar() {
                         <Link href={`/dashboard/${role}`}>Dashboard</Link>
                      </DropdownMenuItem>
                      <DropdownMenuItem asChild>
-                        <Link href={`/enquiries`}>Enquiries</Link>
+                        <Link href={`/dashboard/buyer/enquiries`}>Enquiries</Link>
                      </DropdownMenuItem>
                      <DropdownMenuItem
                         onClick={() => signOut({ callbackUrl: "/" })}
