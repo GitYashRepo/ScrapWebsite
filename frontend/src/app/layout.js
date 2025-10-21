@@ -32,7 +32,7 @@ export default function RootLayout({ children }) {
          <Providers>
             <SideBar />
             <Navbar />
-            {children}
+               {children}
             <WhatsAppWidget brandName="KabaadiMandi" phone = '+918003316534' />
             <Footer />
             <Toaster />

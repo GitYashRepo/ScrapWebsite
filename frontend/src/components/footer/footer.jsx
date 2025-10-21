@@ -6,11 +6,11 @@ import { Mail, MapPin, Phone } from "lucide-react"
 export default function Footer() {
    return (
       <footer className="w-full border-t bg-muted/30 text-muted-foreground">
-         <div className="mx-auto max-w-7xl px-6 py-12 grid grid-cols-2 md:grid-cols-4 gap-8">
+         <div className="mx-auto w-[90vw] px-6 py-12 flex flex-row justify-between">
 
             {/* Brand / About */}
             <div className="col-span-2 sm:col-span-1">
-               <h2 className="text-xl font-semibold text-foreground mb-3">Kabaadi Mandi</h2>
+               <h2 className="text-xl font-semibold text-foreground mb-3">Kabaad Mandi</h2>
                <p className="text-sm leading-relaxed">
                   Your one-stop marketplace for buying and selling scrap metals. Join us to turn your waste into wealth!
                </p>
@@ -34,10 +34,20 @@ export default function Footer() {
             <div>
                <h3 className="text-base font-semibold text-foreground mb-3">Help</h3>
                <ul className="space-y-2 text-sm">
-                  <li><a href="/contact" className="hover:text-foreground transition-colors">Contact Us</a></li>
                   <li><a href="/privacy-policy" className="hover:text-foreground transition-colors">Privacy Policy</a></li>
                   <li><a href="/terms-conditions" className="hover:text-foreground transition-colors">Terms & Conditions</a></li>
                   <li><a href="/refund-cancellation" className="hover:text-foreground transition-colors">Refund & Cancellation</a></li>
+               </ul>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+               <h3 className="text-base font-semibold text-foreground mb-3">Quick Links</h3>
+               <ul className="space-y-2 text-sm">
+                  <li><a href="/shop" className="hover:text-foreground transition-colors">Shop</a></li>
+                  <li><a href="/auction" className="hover:text-foreground transition-colors">Auction</a></li>
+                  <li><a href="/about" className="hover:text-foreground transition-colors">About Us</a></li>
+                  <li><a href="/contact" className="hover:text-foreground transition-colors">Contact</a></li>
                </ul>
             </div>
 
@@ -50,19 +60,11 @@ export default function Footer() {
                   <li><a href="/enquiries" className="hover:text-foreground transition-colors">Enquiry</a></li>
                </ul>
             </div>
-
-            {/* Company */}
-            <div>
-               <h3 className="text-base font-semibold text-foreground mb-3">Company</h3>
-               <ul className="space-y-2 text-sm">
-                  <li><a href="/about" className="hover:text-foreground transition-colors">About Us</a></li>
-               </ul>
-            </div>
          </div>
 
          {/* Payment Methods */}
          <div className="border-t bg-muted/40 py-6">
-            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 px-6">
+            <div className="max-w-[90vw] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 px-6">
                <p className="text-xs text-muted-foreground text-center sm:text-left">
                   © {new Date().getFullYear()} Kabaad Mandi. All rights reserved.
                </p>

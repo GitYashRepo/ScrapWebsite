@@ -88,7 +88,7 @@ export default function AddAuctionProduct() {
    };
 
    return (
-      <div className="max-w-lg mx-auto p-6">
+      <div className="max-w-lg min-h-[80vh] mx-auto p-6">
          <h1 className="text-2xl font-bold mb-4">Add Product for Auction</h1>
          <form onSubmit={handleSubmit} className="space-y-4">
             <div>

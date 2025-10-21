@@ -68,7 +68,7 @@ export default function AdminCategoriesPage() {
    };
 
    return (
-      <div className="p-6">
+      <div className="p-6 max-w-[90vw] min-h-[80vh] mx-auto">
          <h1 className="text-2xl font-semibold mb-6">🛍️ Manage Categories</h1>
 
          {/* ✅ Add Category Form */}

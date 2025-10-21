@@ -4,7 +4,7 @@
 
 const AdminDashboard = () => {
    return (
-      <div>AdminDashboard</div>
+      <div className="max-w-[90vw] min-h-[80vh] mx-auto">AdminDashboard</div>
    )
 }
 

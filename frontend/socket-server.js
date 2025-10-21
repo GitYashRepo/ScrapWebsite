@@ -5,6 +5,7 @@ import { Server } from "socket.io";
 import connectDB from "./src/lib/db/db.js";
 import Message from "./src/models/chat/message.js";
 import ChatSession from "./src/models/chat/chatSession.js";
+import fetch from "node-fetch";
 
 const app = express();
 const server = http.createServer(app);
@@ -62,6 +63,24 @@ io.on("connection", (socket) => {
         createdAt: msg.createdAt,
         time: new Date().toLocaleTimeString(),
       });
+
+       // ✅ Notify seller through Next.js API (Push Notification)
+      try {
+        // Replace this URL with your deployed domain if not local
+        const apiUrl = "http://localhost:3000/api/notifications/send";
+
+        await fetch(apiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sellerId,
+            message: `💬 New message: "${message}"`,
+          }),
+        });
+      } catch (notifyErr) {
+        console.error("Failed to send push notification:", notifyErr);
+      }
+
 
       // Ack to sender
       socket.emit("messageSaved", { ok: true, message: msg });

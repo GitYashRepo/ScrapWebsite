@@ -4,29 +4,30 @@ import SkeletonCard from "@/components/Loader/skeletoncard/skeleton";
 import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { toast } from "sonner"
-
+import { toast } from "sonner";
 
 const ShopPage = () => {
    const { id } = useParams();
    const router = useRouter();
    const { data: session } = useSession();
+
    const buyerId = session?.user?.id;
+   const userRole = session?.user?.role?.toLowerCase();
+
    const [products, setProducts] = useState([]);
    const [loading, setLoading] = useState(false);
    const [message, setMessage] = useState("");
    const [buying, setBuying] = useState(false);
-
    const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
 
-   // Fetch all available products for buyer
+   // ✅ Fetch all available products (for buyers and sellers)
    useEffect(() => {
       const fetchProducts = async () => {
          try {
             setLoading(true);
             const res = await fetch("/api/product", {
                method: "GET",
-               credentials: "include", // 🔹 ensures cookies (and hence session) are sent
+               credentials: "include",
             });
             if (!res.ok) throw new Error("Failed to fetch products");
             const data = await res.json();
@@ -40,10 +41,10 @@ const ShopPage = () => {
       fetchProducts();
    }, []);
 
-   // ✅ Check Buyer Subscription
+   // ✅ Check Buyer Subscription (only for buyers)
    useEffect(() => {
       const checkSubscription = async () => {
-         if (!buyerId) return;
+         if (userRole !== "buyer" || !buyerId) return;
          try {
             const res = await fetch("/api/subscription/check", {
                method: "POST",
@@ -57,16 +58,16 @@ const ShopPage = () => {
          }
       };
       checkSubscription();
-   }, [buyerId]);
+   }, [buyerId, userRole]);
 
-   // 🧩 Handle Buy Now Click —> open chat session
+   // 🧩 Handle Buy Now → open chat session (buyers only)
    const handleBuyNow = async (productId) => {
-      if (!buyerId) {
-         toast.error("You must be signed in as a buyer to start a chat.");
+      if (userRole !== "buyer") {
+         toast.error("Only buyers can buy products.");
          return;
       }
       if (!hasActiveSubscription) {
-         toast.error("Please subscribe to view seller details and contact the seller.");
+         toast.error("Please subscribe to contact sellers.");
          router.push("/dashboard/buyer/subscription");
          return;
       }
@@ -111,38 +112,59 @@ const ShopPage = () => {
                         <h2 className="font-semibold text-lg">{product.name}</h2>
                         <p className="font-semibold">{product.quantity} Kg</p>
                      </div>
-                     <p className="text-sm text-gray-600 line-clamp-2">{product.description}</p>
-                     <p className="text-green-700 font-bold mt-2">Starting Price: ₹{product.pricePerKg}/kg</p>
+
+                     <p className="text-sm text-gray-600 line-clamp-2">
+                        {product.description}
+                     </p>
+
+                     <p className="text-green-700 font-bold mt-2">
+                        Price: ₹{product.pricePerKg}/kg
+                     </p>
 
                      <p className="text-xs text-gray-500 mt-1">
                         Category: {product.category?.name || "Uncategorized"}
                      </p>
                      <p className="text-xs text-gray-500">
-                        Seller: {product.seller?.storeName || product.seller?.name || "Unknown"}
+                        Seller:{" "}
+                        {product.seller?.storeName ||
+                           product.seller?.name ||
+                           "Unknown"}
                      </p>
 
-                     <div className="flex gap-2 mt-4">
-                        <button
-                           onClick={() => { handleBuyNow(product._id) }}
-                           disabled={loading}
-                           className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 disabled:opacity-50"
-                        >
-                           {buying ? "Opening Chat..." : "Buy"}
-                        </button>
+                     {/* ✅ Conditional Buttons / Message */}
+                     <div className="mt-4">
+                        {userRole === "buyer" ? (
+                           <div className="flex gap-2">
+                              <button
+                                 onClick={() => handleBuyNow(product._id)}
+                                 disabled={buying || loading}
+                                 className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 disabled:opacity-50"
+                              >
+                                 {buying ? "Opening Chat..." : "Buy"}
+                              </button>
 
-                        <button
-                           onClick={() => window.location.href = `/dashboard/buyer/product/${product._id}`}
-                           className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
-                        >
-                           View Details
-                        </button>
+                              <button
+                                 onClick={() =>
+                                    router.push(
+                                       `/dashboard/buyer/product/${product._id}`
+                                    )
+                                 }
+                                 className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                              >
+                                 View Details
+                              </button>
+                           </div>
+                        ) : (
+                           <p className="text-sm text-red-600 font-medium text-center border-t pt-3">
+                              Sellers are not allowed to buy products, SignUp as Buyer to Purchase Products.
+                           </p>
+                        )}
                      </div>
                   </div>
                ))}
             </div>
          )}
       </div>
-
    );
 };
 

@@ -4,10 +4,14 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Spinner from "@/components/Loader/spinner/spinner";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import SkeletonCard from "@/components/Loader/skeletoncard/skeleton";
 
 
 export default function CategoryProductsPage() {
    const { id } = useParams();
+   const { data: session } = useSession();
+   const userRole = session?.user?.role?.toLowerCase();
    const [products, setProducts] = useState([]);
    const [category, setCategory] = useState(null);
    const [loading, setLoading] = useState(true);
@@ -35,10 +39,18 @@ export default function CategoryProductsPage() {
       if (id) fetchCategoryProducts();
    }, [id]);
 
-   if (loading) return <Spinner />;
+   if (loading) {
+      return (
+         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-4 px-[5vw]">
+            {Array.from({ length: 6 }).map((_, i) => (
+               <SkeletonCard key={i} />
+            ))}
+         </div>
+      )
+   }
 
    return (
-      <div className="max-w-6xl mx-auto p-6">
+      <div className="max-w-[90vw] min-h-[80vh] mx-auto p-6">
          {category && (
             <div className="flex items-center gap-4 mb-6">
                <img
@@ -71,12 +83,18 @@ export default function CategoryProductsPage() {
                      <p className="text-gray-500 text-sm line-clamp-2">{p.description}</p>
                      <div className="mt-3 flex justify-between items-center">
                         <p className="font-bold text-green-600">₹{p.pricePerKg}/Kg</p>
-                        <Link
-                           href={`/dashboard/buyer/product/${p._id}`}
-                           className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                        >
-                           View
-                        </Link>
+                        {userRole === "buyer" ? (
+                           <Link
+                              href={`/dashboard/buyer/product/${p._id}`}
+                              className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                           >
+                              View
+                           </Link>
+                        ) : (
+                           <p className="text-xs text-red-600 font-medium text-right border-t pt-2">
+                              Sellers are not allowed to buy products, Login as Buyer First.
+                           </p>
+                        )}
                      </div>
                   </div>
                ))}

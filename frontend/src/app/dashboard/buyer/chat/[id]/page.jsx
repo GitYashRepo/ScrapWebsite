@@ -175,7 +175,7 @@ export default function BuyerChatPage() {
    }
 
    return (
-      <div className="p-6 max-w-3xl mx-auto h-[80vh] flex flex-col border rounded-lg shadow-md">
+      <div className="p-6 max-w-3xl min-h-[80vh] mx-auto flex flex-col border rounded-lg shadow-md my-4">
          <h1 className="text-xl font-bold mb-2">💬 Chat with {product?.seller?.ownerName}</h1>
          <p className="text-sm text-gray-500 mb-4">
             Product: <span className="font-medium">{product?.name}</span>
