@@ -16,6 +16,7 @@ const ProductDetails = () => {
    const [loading, setLoading] = useState(true);
    const [error, setError] = useState("");
    const [buying, setBuying] = useState(false);
+   const [pitching, setPitching] = useState(false);
 
    // 🔹 NEW: subscription state
    const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
@@ -62,8 +63,23 @@ const ProductDetails = () => {
       checkSubscription();
    }, [buyerId]);
 
+   const handleBuy = async () => {
+      if (!buyerId) {
+         toast.info("You must be signed in as a buyer to purchase products.");
+         return;
+      }
+      if (!hasActiveSubscription) {
+         toast.info("Please subscribe to view seller details and contact the seller.");
+         router.push("/dashboard/buyer/subscription");
+         return;
+      }
+      setBuying(true);
+      const chatUrl = `/dashboard/buyer/chat/${product._id}`;
+      router.push(chatUrl);
+   }
+
    // 🧩 Handle Buy Now Click —> open chat session
-   const handleBuyNow = async () => {
+   const handlePitching = async () => {
       if (!buyerId) {
          toast.info("You must be signed in as a buyer to start a chat.");
          return;
@@ -75,14 +91,14 @@ const ProductDetails = () => {
          return;
       }
 
-      setBuying(true);
-      const chatUrl = `/dashboard/buyer/chat/${product._id}`;
+      setPitching(true);
+      const chatUrl = `/dashboard/buyer/auction/${product._id}`;
       router.push(chatUrl);
    };
 
 
    return (
-      <div className="p-8 max-w-6xl mx-auto">
+      <div className="p-8 max-w-6xl min-h-[80vh] mx-auto">
          {loading ? (
             <div className="fllex items-center justify-center">
                <Spinner />
@@ -200,21 +216,21 @@ const ProductDetails = () => {
                      )}
 
                      {/* 🛒 Buttons */}
+                     {/* 🛒 Buttons */}
                      <div className="flex gap-3">
-                        <button
-                           onClick={handleBuyNow}
-                           disabled={buying}
-                           className="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 disabled:opacity-60"
-                        >
-                           {buying ? "Opening Chat..." : "Buy"}
-                        </button>
-
-                        {product.isAuction && (
+                        {product.isAuction ? (
                            <button
-                              onClick={() => toast.info("Pitch feature coming soon!")}
+                              onClick={handlePitching}
                               className="flex-1 bg-yellow-500 text-white py-3 rounded-lg hover:bg-yellow-600"
                            >
                               Pitch Bid
+                           </button>
+                        ) : (
+                           <button
+                              onClick={handleBuy}
+                              className="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700"
+                           >
+                              Buy Now
                            </button>
                         )}
                      </div>

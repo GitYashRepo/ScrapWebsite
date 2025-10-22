@@ -59,6 +59,10 @@ export default function SellerChatPage() {
       if (!socket) {
          socket = io("http://localhost:4040", {
             transports: ["websocket", "polling"],
+            query: {
+               userId: sellerId,
+               userRole: "seller", // ✅ identify as seller
+            },
          });
       }
 

@@ -55,6 +55,7 @@ export async function POST(req) {
         _id: product.seller._id,
         storeName: product.seller.storeName,
         ownerName: product.seller.ownerName,
+        email: product.seller.email,
       },
     });
   } catch (error) {

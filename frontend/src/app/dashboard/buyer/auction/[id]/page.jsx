@@ -1,0 +1,222 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { toast } from "sonner";
+
+export default function ProductPitchPage() {
+   const { id } = useParams();
+   const { data: session } = useSession();
+
+   const userRole = session?.user?.role?.toLowerCase();
+   const buyerId = session?.user?.id;
+
+   const [product, setProduct] = useState(null);
+   const [bids, setBids] = useState([]);
+   const [loading, setLoading] = useState(true);
+   const [loadingBids, setLoadingBids] = useState(false);
+   const [bidAmount, setBidAmount] = useState("");
+   const [userBid, setUserBid] = useState(null);
+
+   // Fetch product and bids
+   useEffect(() => {
+      if (!id || !session) return;
+
+      const fetchData = async () => {
+         try {
+            const [productRes, bidsRes] = await Promise.all([
+               fetch(`/api/product/${id}`),
+               fetch(`/api/bid?productId=${id}`),
+            ]);
+
+            const productData = await productRes.json();
+            const bidsData = await bidsRes.json();
+
+            setProduct(productData);
+            setBids(Array.isArray(bidsData) ? bidsData : []);
+
+            // Find if current buyer has already placed a bid
+            const existingBid = bidsData.find(
+               (bid) => bid.buyer?._id === session.user.id
+            );
+            setUserBid(existingBid || null);
+         } catch (error) {
+            console.error("Error loading auction details:", error);
+            toast.error("Failed to load auction details");
+            setBids([]);
+         } finally {
+            setLoading(false);
+         }
+      };
+
+      fetchData();
+   }, [id, session]);
+
+   // Place a bid
+   const handlePlaceBid = async () => {
+      if (userRole !== "buyer") {
+         toast.error("Only buyers can place bids!");
+         return;
+      }
+
+      if (!bidAmount || isNaN(bidAmount) || Number(bidAmount) <= 0) {
+         toast.error("Please enter a valid bid amount!");
+         return;
+      }
+
+      try {
+         const res = await fetch("/api/bid", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ productId: id, amount: Number(bidAmount) }),
+         });
+
+         const data = await res.json();
+
+         if (!res.ok) throw new Error(data.error || "Failed to place bid");
+
+         toast.success("Bid placed successfully!");
+         setBidAmount("");
+
+         // Update local state
+         setUserBid({
+            amount: Number(bidAmount),
+            buyer: { _id: buyerId, name: session.user.name },
+         });
+
+         // Refresh bid list
+         setLoadingBids(true);
+         const bidsRes = await fetch(`/api/bid?productId=${id}`);
+         const bidsData = await bidsRes.json();
+         setBids(Array.isArray(bidsData) ? bidsData : []);
+      } catch (error) {
+         toast.error(error.message);
+      } finally {
+         setLoadingBids(false);
+      }
+   };
+
+   if (loading) {
+      return (
+         <div className="max-w-6xl min-h-[80vh] mx-auto p-6">
+            <p className="p-6 text-center text-gray-500">Loading auction...</p>
+         </div>
+      )
+   }
+
+   if (!product) {
+      return (
+         <div className="max-w-6xl min-h-[80vh] mx-auto p-6">
+            <p className="p-6 text-center text-gray-500">Product not found.</p>
+         </div >
+      )
+   }
+
+   return (
+      <div className="max-w-6xl min-h-[80vh] mx-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+         {/* Left: Product Image + Bids */}
+         <div>
+            <img
+               src={product.images?.[0] || "/file.svg"}
+               alt={product.name}
+               className="w-full h-80 object-cover rounded-xl mb-4"
+            />
+
+            {/* Bids Section */}
+            <div className="border rounded-lg p-4 bg-gray-50">
+               <h2 className="text-lg font-semibold mb-2">Bids on this Product <span>Highest Bid Shown on Top !</span></h2>
+
+               {loadingBids ? (
+                  <p className="text-sm text-gray-500">Refreshing bids...</p>
+               ) : bids.length === 0 ? (
+                  <p className="text-sm text-gray-500">No bids yet.</p>
+               ) : (
+                  <ul className="space-y-2">
+                     {bids
+                        .sort((a, b) => b.amount - a.amount) // Sort descending
+                        .map((bid, index) => {
+                           let bgColor = "bg-white"; // default
+                           let textColor = "text-green-700"; // default
+                           let crown = "";
+
+                           if (index === 0) {
+                              bgColor = "bg-yellow-100";
+                              textColor = "text-yellow-800";
+                              crown = "👑 "; // crown for top bid
+                           } else if (index === 1) {
+                              bgColor = "bg-blue-100";
+                              textColor = "text-blue-800";
+                           } else if (index === 2) {
+                              bgColor = "bg-purple-100";
+                              textColor = "text-purple-800";
+                           }
+
+                           return (
+                              <li
+                                 key={bid._id}
+                                 className={`flex justify-between items-center ${bgColor} p-2 rounded-md shadow-sm`}
+                              >
+                                 <span className="font-medium">
+                                    {crown}
+                                    {bid.buyer?.name}
+                                 </span>
+                                 <span className={`font-bold ${textColor}`}>
+                                    ₹{bid.amount}
+                                 </span>
+                              </li>
+                           );
+                        })}
+                  </ul>
+               )}
+            </div>
+         </div>
+
+         {/* Right: Product Info + Bid Form */}
+         <div>
+            <h1 className="text-2xl font-bold mb-2">{product.name}</h1>
+            <p className="text-sm text-gray-500 mb-2">
+               {product.category?.name || "Uncategorized"}
+            </p>
+            <p className="text-gray-700 mb-4">{product.description}</p>
+
+            <p className="text-green-700 font-semibold">
+               Starting Price: ₹{product.pricePerKg}/kg
+            </p>
+
+            <p className="text-xs text-gray-500 mt-2">
+               🕒 Auction Period:{" "}
+               {new Date(product.auctionStart).toLocaleDateString()} →{" "}
+               {new Date(product.auctionEnd).toLocaleDateString()}
+            </p>
+
+            {/* Bid Section */}
+            {userRole === "buyer" ? (
+
+               <div className="mt-6">
+                  <label className="block text-sm font-medium mb-2">
+                     Enter your Bid Amount (₹)
+                  </label>
+                  <input
+                     type="number"
+                     value={bidAmount}
+                     onChange={(e) => setBidAmount(e.target.value)}
+                     className="w-full border rounded-lg p-2 mb-3"
+                     placeholder="Enter your bid amount"
+                  />
+                  <button
+                     onClick={handlePlaceBid}
+                     className="bg-yellow-600 text-white py-2 px-4 rounded-lg hover:bg-yellow-700 w-full"
+                  >
+                     Place Bid
+                  </button>
+               </div>
+            ) : (
+               <p className="text-sm text-red-600 mt-6">
+                  Only buyers are allowed to bid on auctions.
+               </p>
+            )}
+         </div>
+      </div>
+   );
+}

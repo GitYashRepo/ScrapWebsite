@@ -144,6 +144,7 @@ export function Navbar() {
       )
    }
 
+   // 👤 Role-Based User Profile
    const UserProfile = () => {
       if (status === "loading") {
          return <div className="text-sm text-muted-foreground">Loading...</div>;
@@ -151,6 +152,21 @@ export function Navbar() {
 
       if (session?.user) {
          const { name, role } = session.user;
+
+         const menuItems = {
+            buyer: [
+               { label: "Dashboard", href: `/dashboard/buyer` },
+               { label: "Enquiries", href: `/dashboard/buyer/enquiries` },
+            ],
+            seller: [
+               { label: "Dashboard", href: `/dashboard/seller` },
+               { label: "Chats", href: `/dashboard/seller/chat` },
+               { label: "Active Subscription", href: `/dashboard/seller/subscription` },
+            ],
+            admin: [{ label: "Dashboard", href: `/dashboard/admin` }],
+         };
+
+         const items = menuItems[role?.toLowerCase()] || [];
 
          return (
             <div className="flex items-center gap-4">
@@ -167,18 +183,24 @@ export function Navbar() {
                               ({role})
                            </span>
                         </span>
-                        <ChevronDown className="h-3 w-3 opacity-70" aria-hidden="true" />
+                        <ChevronDown
+                           className="h-3 w-3 opacity-70"
+                           aria-hidden="true"
+                        />
                      </Button>
                   </DropdownMenuTrigger>
+
                   <DropdownMenuContent>
                      <DropdownMenuLabel>Account</DropdownMenuLabel>
                      <DropdownMenuSeparator />
-                     <DropdownMenuItem asChild>
-                        <Link href={`/dashboard/${role}`}>Dashboard</Link>
-                     </DropdownMenuItem>
-                     <DropdownMenuItem asChild>
-                        <Link href={`/dashboard/buyer/enquiries`}>Enquiries</Link>
-                     </DropdownMenuItem>
+
+                     {items.map((item) => (
+                        <DropdownMenuItem asChild key={item.label}>
+                           <Link href={item.href}>{item.label}</Link>
+                        </DropdownMenuItem>
+                     ))}
+
+                     <DropdownMenuSeparator />
                      <DropdownMenuItem
                         onClick={() => signOut({ callbackUrl: "/" })}
                         className="flex items-center gap-2 text-red-600"
@@ -314,7 +336,7 @@ export function Navbar() {
                <div className="flex items-center gap-3">
                   <MobileSheet />
                   <Link href="/" className="flex items-center gap-2">
-                     <img src="/Logo/logo.png" alt="Brand logo" className="w-[350px]" />
+                     <img src="/Logo/KabaadMandiNewLogo.png" alt="Brand logo" className="w-[350px]" />
                   </Link>
                </div>
 

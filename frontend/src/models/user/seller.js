@@ -10,6 +10,7 @@ const SellerSchema = new mongoose.Schema({
   state: {type: String, required: true},
   pinCode: {type: Number, required: true},
   phone: {type: Number, required: true},
+  pushSubscription: { type: Object, default: null },
 });
 
 export default mongoose.models.Seller || mongoose.model("Seller", SellerSchema);

@@ -128,8 +128,8 @@ export default function BuyerDashboardPage() {
                      <p className="text-gray-500 text-sm">Status</p>
                      <p
                         className={`text-lg font-semibold ${subscription.status === "active"
-                              ? "text-green-600"
-                              : "text-red-600"
+                           ? "text-green-600"
+                           : "text-red-600"
                            }`}
                      >
                         {subscription.status}

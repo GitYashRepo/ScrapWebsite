@@ -12,17 +12,39 @@ export async function GET(req) {
 
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     if (!token) {
-      return new Response(JSON.stringify({ error: "Unauthorized: Sellers only" }), { status: 403 });
+      return new Response(
+        JSON.stringify({ error: "Unauthorized: Please log in first." }),
+        { status: 401 }
+      );
     }
 
-    let auctionProducts;
 
-    if (token.role === "buyer") {
-         auctionProducts = await Product.find({ status: "available", isAuction: true })
-            .populate("category") // populate full category document
-            .populate("seller")   // ✅ populate entire seller document (all fields)
-            .sort({ createdAt: -1 });
+    // ✅ Allow only buyer, seller, or admin roles
+    const allowedRoles = ["buyer", "seller", "admin"];
+    const userRole = token.role?.toLowerCase();
+
+    if (!allowedRoles.includes(userRole)) {
+      return new Response(
+        JSON.stringify({ error: "Access denied. Invalid role." }),
+        { status: 403 }
+      );
     }
+
+    // ✅ Role-based query
+    // - Buyers & Sellers → only see available auction products
+    // - Admin → sees all auction products
+    const query =
+    userRole === "admin"
+      ? { isAuction: true }
+      : userRole === "seller"
+      ? { isAuction: true, seller: token.id } // only their own auctions
+      : { isAuction: true, status: "available" };
+
+    // ✅ Fetch auctions and populate related data
+    const auctionProducts = await Product.find(query)
+      .populate("category") // full category details
+      .populate("seller")   // seller info (storeName, name, etc.)
+      .sort({ createdAt: -1 });
 
     return new Response(JSON.stringify(auctionProducts), { status: 200 });
   } catch (error) {

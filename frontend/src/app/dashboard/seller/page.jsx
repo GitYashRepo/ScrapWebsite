@@ -15,6 +15,45 @@ export default function SellerDashboard() {
    const [loading, setLoading] = useState(true);
    const router = useRouter();
 
+
+   useEffect(() => {
+      async function setupPush() {
+         if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
+
+         const reg = await navigator.serviceWorker.register("/sw.js");
+         const permission = await Notification.requestPermission();
+         if (permission !== "granted") return;
+
+         const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY; // Add in .env.local
+         const subscription = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(vapidKey),
+         });
+
+         await fetch("/api/notifications/send", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+               sellerId: session?.user?.id,
+               subscription,
+            }),
+         });
+      }
+
+      if (session?.user?.id) setupPush();
+   }, [session]);
+
+   function urlBase64ToUint8Array(base64String) {
+      const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+      const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+      const rawData = atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+      for (let i = 0; i < rawData.length; ++i)
+         outputArray[i] = rawData.charCodeAt(i);
+      return outputArray;
+   }
+
+
    const fetchProducts = async () => {
       try {
          setLoading(true);
@@ -85,7 +124,7 @@ export default function SellerDashboard() {
    };
 
    return (
-      <div className="p-6 space-y-10">
+      <div className="p-6 min-h-[80vh] space-y-10">
          {/* Header */}
          <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold">My Products</h1>
@@ -306,6 +345,12 @@ export default function SellerDashboard() {
                                     className="mt-3 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
                                  >
                                     ✏️ Edit
+                                 </button>
+                                 <button
+                                    onClick={() => router.push(`/dashboard/seller/auction-bids/${p._id}`)}
+                                    className="mt-3 bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                                 >
+                                    👁️ View Bids
                                  </button>
                               </div>
                            </div>

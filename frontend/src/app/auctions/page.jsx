@@ -4,20 +4,23 @@ import SkeletonCard from "@/components/Loader/skeletoncard/skeleton";
 import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { toast } from "sonner"
+import { toast } from "sonner";
 
 const AuctionProductsPage = () => {
    const { id } = useParams();
    const router = useRouter();
    const { data: session } = useSession();
-   const buyerId = session?.user?.id;
+
+   const userId = session?.user?.id;
+   const userRole = session?.user?.role?.toLowerCase();
+
    const [auctions, setAuctions] = useState([]);
    const [loading, setLoading] = useState(false);
    const [message, setMessage] = useState("");
    const [buying, setBuying] = useState(false);
-
    const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
 
+   // ✅ Fetch all auctions (visible to both buyers and sellers)
    useEffect(() => {
       const fetchAuctions = async () => {
          try {
@@ -38,15 +41,15 @@ const AuctionProductsPage = () => {
       fetchAuctions();
    }, []);
 
-   // ✅ Check Buyer Subscription
+   // ✅ Check subscription — only for buyers
    useEffect(() => {
       const checkSubscription = async () => {
-         if (!buyerId) return;
+         if (userRole !== "buyer" || !userId) return;
          try {
             const res = await fetch("/api/subscription/check", {
                method: "POST",
                headers: { "Content-Type": "application/json" },
-               body: JSON.stringify({ userId: buyerId, userType: "Buyer" }),
+               body: JSON.stringify({ userId, userType: "Buyer" }),
             });
             const data = await res.json();
             setHasActiveSubscription(data.active);
@@ -55,50 +58,25 @@ const AuctionProductsPage = () => {
          }
       };
       checkSubscription();
-   }, [buyerId]);
+   }, [userId, userRole]);
 
-   const handleAction = async (productId, actionType) => {
-      setLoading(true);
-      setMessage("");
-
-      try {
-         // Example: call /api/pitch to place a bid
-         const res = await fetch(`/api/${actionType}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ productId }),
-         });
-
-         const data = await res.json();
-         if (!res.ok) throw new Error(data.error || "Action failed");
-
-         setMessage(`✅ Successfully ${actionType === "pitch" ? "pitched" : "processed"} product!`);
-      } catch (error) {
-         console.error(error);
-         setMessage(`❌ ${error.message}`);
-      } finally {
-         setLoading(false);
-      }
-   };
-
-   // 🧩 Handle Buy Now Click —> open chat session
    const handlePitching = async (productId) => {
-      if (!buyerId) {
-         toast.error("You must be signed in as a buyer to start a chat.");
+      if (userRole !== "buyer") {
+         toast.error("Only buyers can pitch or start a chat.");
          return;
       }
       if (!hasActiveSubscription) {
-         toast.error("Please subscribe to view seller details and contact the seller.");
+         toast.error("Please subscribe to participate in auctions.");
          router.push("/dashboard/buyer/subscription");
          return;
       }
+
       setBuying(true);
-      const chatUrl = `/dashboard/buyer/chat/${productId}`;
-      router.push(chatUrl);
+      router.push(`/dashboard/buyer/auction/${productId}`);
    };
 
    return (
-      <div className="p-6">
+      <div className="min-h-[80vh] p-6">
          <h1 className="text-2xl font-bold mb-4">Active Auctions</h1>
 
          {message && (
@@ -133,9 +111,11 @@ const AuctionProductsPage = () => {
                         <h2 className="font-semibold text-lg">{product.name}</h2>
                         <p className="font-semibold">{product.quantity} Kg</p>
                      </div>
+
                      <p className="text-sm text-gray-600 line-clamp-2">
                         {product.description}
                      </p>
+
                      <p className="text-green-700 font-bold mt-2">
                         Starting Price: ₹{product.pricePerKg}/kg
                      </p>
@@ -144,7 +124,10 @@ const AuctionProductsPage = () => {
                         Category: {product.category?.name || "Uncategorized"}
                      </p>
                      <p className="text-xs text-gray-500">
-                        Seller: {product.seller?.storeName || product.seller?.name || "Unknown"}
+                        Seller:{" "}
+                        {product.seller?.storeName ||
+                           product.seller?.name ||
+                           "Unknown"}
                      </p>
 
                      <p className="text-xs text-gray-500 mt-2">
@@ -154,22 +137,35 @@ const AuctionProductsPage = () => {
                      </p>
 
                      <div className="flex gap-2 mt-4">
-                        <button
-                           onClick={() => handleAction(product._id, "pitch")}
-                           disabled={loading}
-                           className="flex-1 bg-yellow-600 text-white py-2 rounded-lg hover:bg-yellow-700 disabled:opacity-50"
-                        >
-                           {loading ? "Processing..." : "Pitch"}
-                        </button>
+                        {/* ✅ Show Pitch button only for Buyers */}
+                        {userRole === "buyer" ? (
+                           <div className="w-full flex gap-2">
+                              <button
+                                 onClick={() => handlePitching(product._id)}
+                                 disabled={buying || loading}
+                                 className="flex-1 bg-yellow-600 text-white py-2 rounded-lg hover:bg-yellow-700 disabled:opacity-50"
+                              >
+                                 {buying ? "Processing..." : "Pitch"}
+                              </button>
 
-                        <button
-                           onClick={() =>
-                              (window.location.href = `/dashboard/buyer/product/${product._id}`)
-                           }
-                           className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
-                        >
-                           View Details
-                        </button>
+                              <button
+                                 onClick={() =>
+                                    router.push(
+                                       `/dashboard/buyer/product/${product._id}`
+                                    )
+                                 }
+                                 className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                              >
+                                 View Details
+                              </button>
+                           </div>
+                        ) : (
+                           <div className="w-full border-t pt-3">
+                              <p className="text-sm text-red-600 font-medium text-center">
+                                 Sellers are not allowed to bid in auctions, SiginUp as Buyer to Bid in Auction.
+                              </p>
+                           </div>
+                        )}
                      </div>
                   </div>
                ))}

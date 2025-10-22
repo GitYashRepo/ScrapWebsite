@@ -39,7 +39,7 @@ export default function BuyerEnquiriesPage() {
    }
 
    return (
-      <div className="p-6 max-w-5xl mx-auto">
+      <div className="p-6 max-w-5xl min-h-[80vh] mx-auto">
          <h1 className="text-2xl font-bold mb-6">📩 Your Enquiries</h1>
 
          {buyers.length === 0 ? (

@@ -180,7 +180,7 @@ export default function SellerSubscriptionPage() {
    }
 
    return (
-      <div className="p-10">
+      <div className="p-10 max-w-[90vw] min-h-[80vh] mx-auto">
          <Script src="https://checkout.razorpay.com/v1/checkout.js" />
          <h1 className="text-3xl font-bold mb-6 text-center">
             Choose Your Seller Subscription Plan
