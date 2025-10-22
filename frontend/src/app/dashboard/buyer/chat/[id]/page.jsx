@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import io from "socket.io-client";
+import emailjs from "@emailjs/browser";
 
 let socket;
 
@@ -11,12 +12,14 @@ export default function BuyerChatPage() {
    const { id: productId } = useParams();
    const { data: session, status } = useSession();
    const buyerId = session?.user?.id;
+   const buyerEmail = session?.user?.email;
 
    const [sellerId, setSellerId] = useState(null);
    const [product, setProduct] = useState(null);
    const [sessionId, setSessionId] = useState(null);
    const [message, setMessage] = useState("");
    const [messages, setMessages] = useState([]);
+   const [sellerEmail, setSellerEmail] = useState(null);
    const messagesRef = useRef(null);
 
    // --- Start Chat / Load session
@@ -36,6 +39,7 @@ export default function BuyerChatPage() {
                setSessionId(data.sessionId);
                setProduct(data.product);
                setSellerId(data.seller._id);
+               setSellerEmail(data.seller.email);
             } else {
                console.warn("startChat returned no sessionId", data);
             }
@@ -54,6 +58,10 @@ export default function BuyerChatPage() {
       if (!socket) {
          socket = io("http://localhost:4040", {
             transports: ["websocket", "polling"],
+            query: {
+               userId: buyerId,
+               userRole: "buyer", // ✅ send identity to backend
+            },
          });
       }
 
@@ -117,6 +125,15 @@ export default function BuyerChatPage() {
 
       socket.on("errorMessage", (d) => console.error("Socket errorMessage (buyer):", d));
 
+      // ✅ Handle seller status event from server
+      socket.on("sellerStatus", async (isOnline) => {
+         if (!isOnline && sellerEmail) {
+            const buyerName = session?.user?.name || "A Buyer"; // get actual name
+            await sendOfflineEmail(sellerEmail, product?.seller?.ownerName, buyerName, buyerEmail);
+         }
+      });
+
+
       return () => {
          socket?.disconnect();
          socket = null;
@@ -142,6 +159,39 @@ export default function BuyerChatPage() {
       fetchMessages();
    }, [sessionId]);
 
+   useEffect(() => {
+      console.log("ENV TEST:", {
+         service: process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
+         template: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,
+         key: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY,
+      });
+   }, []);
+
+
+   // --- Send Email via EmailJS if seller is offline
+   const sendOfflineEmail = async (sellerEmail, sellerName, buyerName, buyerEmail) => {
+      try {
+         const customMessage = `Hello "${sellerName}", a buyer "${buyerName}" has messaged you on Kabaad Mandi. Please login to have a conversation with them! \n\n - Kabaad Mandi Team`;
+         const params = {
+            to_email: sellerEmail, // matches "To Email" → {{to_email}}
+            name: buyerName,       // matches {{name}}
+            reply_to: buyerEmail,    // matches "Reply To" → {{email}}
+            message: customMessage,      // matches {{message}}
+         };
+
+         await emailjs.send(
+            process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
+            process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,
+            params,
+            process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY
+         );
+
+         console.log("📧 Email notification sent to seller!");
+      } catch (error) {
+         console.error("❌ Failed to send email notification:", error);
+      }
+   };
+
    // --- Send message
    const handleSend = () => {
       if (!message.trim() || !buyerId || !sellerId || !productId) return;
@@ -166,6 +216,15 @@ export default function BuyerChatPage() {
          senderModel: "Buyer",
          tempId,
       });
+
+      // ✅ Check if seller is online
+      socket.emit("checkSellerStatus", { sellerId }, async (isOnline) => {
+         if (!isOnline && sellerEmail) {
+            const buyerName = session?.user?.name || "A Buyer";
+            await sendOfflineEmail(sellerEmail, product?.seller?.ownerName, buyerName, buyerEmail);
+         }
+      });
+
 
       setMessage("");
    };

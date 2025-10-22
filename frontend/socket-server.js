@@ -5,7 +5,10 @@ import { Server } from "socket.io";
 import connectDB from "./src/lib/db/db.js";
 import Message from "./src/models/chat/message.js";
 import ChatSession from "./src/models/chat/chatSession.js";
-import fetch from "node-fetch";
+import emailjs from "emailjs-com";
+import Seller from "./src/models/user/seller.js";
+import Buyer from "./src/models/buyer/buyer.js";
+import Product from "./src/models/product/product.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -19,8 +22,16 @@ const io = new Server(server, {
   },
 });
 
+// 🟢 Track online users (by seller/buyer ID)
+const onlineUsers = new Map();
+
 io.on("connection", (socket) => {
   console.log("⚡ Socket connected:", socket.id);
+
+   // Track user identity for online detection
+  const { userId, userRole } = socket.handshake.query || {};
+  socket.userId = userId;
+  socket.userRole = userRole;
 
   socket.on("joinRoom", (roomId) => {
     if (!roomId) return;
@@ -64,33 +75,31 @@ io.on("connection", (socket) => {
         time: new Date().toLocaleTimeString(),
       });
 
-       // ✅ Notify seller through Next.js API (Push Notification)
-      try {
-        // Replace this URL with your deployed domain if not local
-        const apiUrl = "http://localhost:3000/api/notifications/send";
-
-        await fetch(apiUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            sellerId,
-            message: `💬 New message: "${message}"`,
-          }),
-        });
-      } catch (notifyErr) {
-        console.error("Failed to send push notification:", notifyErr);
-      }
-
-
       // Ack to sender
       socket.emit("messageSaved", { ok: true, message: msg });
+
+       // 🔍 Check if seller is online
+      const sellerOnline = onlineUsers.has(String(sellerId));
+
+      // Notify the sender (buyer) if seller is offline
+      socket.emit("sellerStatus", { sellerId, isOnline: sellerOnline });
     } catch (err) {
       console.error("Socket sendMessage error:", err);
     }
   });
 
+   // --- Handle seller/buyer online status check
+  socket.on("checkSellerStatus", ({ sellerId }, callback) => {
+    const isOnline = onlineUsers.has(String(sellerId));
+    callback(isOnline);
+  });
+
+  // --- On disconnect
   socket.on("disconnect", () => {
-    console.log("❌ Socket disconnected:", socket.id);
+    if (socket.userId) {
+      onlineUsers.delete(socket.userId);
+      console.log(`🔴 ${socket.userRole} ${socket.userId} disconnected`);
+    }
   });
 });
 
