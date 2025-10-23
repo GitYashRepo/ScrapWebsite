@@ -8,6 +8,6 @@ const BuyerSchema = new Schema({
   pinCode: {type: Number, required: true},
   phone: {type: Number, required: true},
   password: { type: String, required: true },
-});
+}, { timestamps: true });
 
 export default mongoose.models.Buyer || mongoose.model("Buyer", BuyerSchema);

@@ -45,33 +45,12 @@ export default function SignupPage() {
             value={role}
             className="w-full p-2 border rounded mb-4"
          >
-            <option value="admin">Admin</option>
+            {/* <option value="admin">Admin</option> */}
             <option value="buyer">Buyer</option>
             <option value="seller">Seller</option>
          </select>
 
          <form onSubmit={handleSubmit} className="space-y-3">
-            {/* Admin Fields */}
-            {role === "admin" && (
-               <>
-                  <input
-                     name="email"
-                     placeholder="Admin Email"
-                     type="email"
-                     required
-                     onChange={handleChange}
-                     className="w-full p-2 border rounded"
-                  />
-                  <input
-                     name="password"
-                     placeholder="Password"
-                     type="password"
-                     required
-                     onChange={handleChange}
-                     className="w-full p-2 border rounded"
-                  />
-               </>
-            )}
 
             {/* Buyer Fields */}
             {role === "buyer" && (

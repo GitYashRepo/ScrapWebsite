@@ -11,10 +11,10 @@ export default function BuyerSubscriptionPage() {
    const [loading, setLoading] = useState(false);
 
    const plans = [
-      { id: "buyer_monthly", label: "1 Month", price: 500 },
-      { id: "buyer_quarterly", label: "3 Months", price: 1300 },
-      { id: "buyer_halfyear", label: "6 Months", price: 2500 },
-      { id: "buyer_yearly", label: "1 Year", price: 5000 },
+      { id: "buyer_monthly", label: "1 Month", price: 200 },
+      { id: "buyer_quarterly", label: "3 Months", price: 500 },
+      { id: "buyer_halfyear", label: "6 Months", price: 750 },
+      { id: "buyer_yearly", label: "1 Year", price: 1000 },
    ];
 
    const handleSubscribe = async (planId) => {

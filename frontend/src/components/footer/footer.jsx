@@ -9,10 +9,10 @@ export default function Footer() {
          <div className="mx-auto w-[90vw] px-6 py-12 flex flex-row justify-between">
 
             {/* Brand / About */}
-            <div className="col-span-2 sm:col-span-1">
+            <div className="w-[40vw] col-span-2 sm:col-span-1">
                <h2 className="text-xl font-semibold text-foreground mb-3">Kabaad Mandi</h2>
                <p className="text-sm leading-relaxed">
-                  Your one-stop marketplace for buying and selling scrap metals. Join us to turn your waste into wealth!
+                  At Kabaad Mandi, we are revolutionizing the way scrap materials are bought and sold. Our platform connects sellers and buyers across industries, creating a transparent, efficient, and secure marketplace for scrap trading. Whether you’re looking to buy, sell, or auction industrial scrap, we make it simple with secure payments and real-time bidding.
                </p>
                <div className="mt-4 space-y-2 text-sm">
                   <div className="flex items-center gap-2">
@@ -45,7 +45,7 @@ export default function Footer() {
                <h3 className="text-base font-semibold text-foreground mb-3">Quick Links</h3>
                <ul className="space-y-2 text-sm">
                   <li><a href="/shop" className="hover:text-foreground transition-colors">Shop</a></li>
-                  <li><a href="/auction" className="hover:text-foreground transition-colors">Auction</a></li>
+                  <li><a href="/auctions" className="hover:text-foreground transition-colors">Auction</a></li>
                   <li><a href="/about" className="hover:text-foreground transition-colors">About Us</a></li>
                   <li><a href="/contact" className="hover:text-foreground transition-colors">Contact</a></li>
                </ul>

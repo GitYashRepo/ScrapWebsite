@@ -32,6 +32,10 @@ io.on("connection", (socket) => {
   const { userId, userRole } = socket.handshake.query || {};
   socket.userId = userId;
   socket.userRole = userRole;
+//   if (userId && userRole) {
+//      onlineUsers.set(userId, { socketId: socket.id, role: userRole });
+//      console.log(`🟢 ${userRole} ${userId} is now online`);
+//    }
 
   socket.on("joinRoom", (roomId) => {
     if (!roomId) return;
@@ -81,8 +85,14 @@ io.on("connection", (socket) => {
        // 🔍 Check if seller is online
       const sellerOnline = onlineUsers.has(String(sellerId));
 
+      // 🔍 Check if buyer is online
+      // const buyerOnline = onlineUsers.has(String(buyerId));
+
       // Notify the sender (buyer) if seller is offline
       socket.emit("sellerStatus", { sellerId, isOnline: sellerOnline });
+
+      // Notify the sender (seller) if buyer is offline
+      // socket.emit("buyerStatus", { buyerId, isOnline: buyerOnline });
     } catch (err) {
       console.error("Socket sendMessage error:", err);
     }
@@ -90,9 +100,14 @@ io.on("connection", (socket) => {
 
    // --- Handle seller/buyer online status check
   socket.on("checkSellerStatus", ({ sellerId }, callback) => {
-    const isOnline = onlineUsers.has(String(sellerId));
-    callback(isOnline);
+    const issellerOnline = onlineUsers.has(String(sellerId));
+    callback(issellerOnline);
   });
+
+//   socket.on("checkBuyerStatus", ({ buyerId }, callback) => {
+//      const isbuyerOnline = onlineUsers.has(String(buyerId));
+//      callback(isbuyerOnline);
+//   });
 
   // --- On disconnect
   socket.on("disconnect", () => {

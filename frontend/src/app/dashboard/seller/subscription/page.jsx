@@ -16,10 +16,10 @@ export default function SellerSubscriptionPage() {
 
 
    const plans = [
-      { id: "seller_monthly", label: "1 Month", price: 2500 },
+      { id: "seller_monthly", label: "1 Month", price: 2000 },
       { id: "seller_quarterly", label: "3 Months", price: 5000 },
-      { id: "seller_halfyear", label: "6 Months", price: 10000 },
-      { id: "seller_yearly", label: "1 Year", price: 15000 },
+      { id: "seller_halfyear", label: "6 Months", price: 7500 },
+      { id: "seller_yearly", label: "1 Year", price: 10000 },
    ];
 
    // ✅ Fetch seller details

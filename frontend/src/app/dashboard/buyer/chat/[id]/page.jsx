@@ -13,6 +13,8 @@ export default function BuyerChatPage() {
    const { data: session, status } = useSession();
    const buyerId = session?.user?.id;
    const buyerEmail = session?.user?.email;
+   const emailSentRef = useRef(sessionStorage.getItem("emailSent") === "true");
+
 
    const [sellerId, setSellerId] = useState(null);
    const [product, setProduct] = useState(null);
@@ -137,6 +139,8 @@ export default function BuyerChatPage() {
       return () => {
          socket?.disconnect();
          socket = null;
+         sessionStorage.removeItem("emailSentToSeller");
+         emailSentRef.current = false;
       };
    }, [buyerId, sellerId, productId]);
 
@@ -167,9 +171,16 @@ export default function BuyerChatPage() {
       });
    }, []);
 
+   const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
+   const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
+   const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
 
    // --- Send Email via EmailJS if seller is offline
    const sendOfflineEmail = async (sellerEmail, sellerName, buyerName, buyerEmail) => {
+      if (emailSentRef.current) {
+         console.log("📨 Email already sent in this session. Skipping...");
+         return;
+      }
       try {
          const customMessage = `Hello "${sellerName}", a buyer "${buyerName}" has messaged you on Kabaad Mandi. Please login to have a conversation with them! \n\n - Kabaad Mandi Team`;
          const params = {
@@ -180,17 +191,25 @@ export default function BuyerChatPage() {
          };
 
          await emailjs.send(
-            process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
-            process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,
+            serviceId,
+            templateId,
             params,
-            process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY
+            publicKey
          );
 
+         emailSentRef.current = true; // Mark email as sent
+         sessionStorage.setItem("emailSent", "true");
          console.log("📧 Email notification sent to seller!");
       } catch (error) {
          console.error("❌ Failed to send email notification:", error);
       }
    };
+
+   useEffect(() => {
+      return () => {
+         sessionStorage.removeItem("emailSent"); // reset when buyer leaves
+      };
+   }, []);
 
    // --- Send message
    const handleSend = () => {
@@ -234,7 +253,7 @@ export default function BuyerChatPage() {
    }
 
    return (
-      <div className="p-6 max-w-3xl min-h-[80vh] mx-auto flex flex-col border rounded-lg shadow-md my-4">
+      <div className="p-6 max-w-3xl h-[80vh] mx-auto flex flex-col border rounded-lg shadow-md my-4">
          <h1 className="text-xl font-bold mb-2">💬 Chat with {product?.seller?.ownerName}</h1>
          <p className="text-sm text-gray-500 mb-4">
             Product: <span className="font-medium">{product?.name}</span>
