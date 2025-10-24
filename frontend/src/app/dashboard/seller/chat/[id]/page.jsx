@@ -11,6 +11,8 @@ export default function SellerChatPage() {
    const { id: sessionId } = useParams();
    const { data: session, status } = useSession();
    const sellerId = session?.user?.id;
+   // const sellerEmail = session?.user?.email;
+   // const emailSentRef = useRef(sessionStorage.getItem("emailSentToBuyer") === "true");
 
    const [buyer, setBuyer] = useState(null);
    const [product, setProduct] = useState(null);
@@ -127,11 +129,59 @@ export default function SellerChatPage() {
 
       socket.on("errorMessage", (d) => console.error("Socket errorMessage (seller):", d));
 
+      // ✅ Listen for buyer online/offline updates
+      // socket.on("buyerStatus", async (isOnline) => {
+      //    if (!isOnline && buyer?.email) {
+      //       const sellerName = session?.user?.name || "A Seller";
+      //       await sendOfflineEmailToBuyer(
+      //          buyer.email,
+      //          buyer.name,
+      //          product?.name,
+      //          sellerName,
+      //          sellerEmail
+      //       );
+      //    }
+      // });
+
       return () => {
          socket?.disconnect();
          socket = null;
+         // sessionStorage.removeItem("emailSentToBuyer");
+         // emailSentRef.current = false;
       };
    }, [buyer, product, sellerId]);
+
+   // --- EmailJS details
+   // const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
+   // const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
+   // const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
+
+   // --- Send email to buyer when offline
+   // const sendOfflineEmailToBuyer = async (buyerEmail, buyerName, productName, sellerName, sellerEmail) => {
+   //    if (emailSentRef.current) {
+   //       console.log("📨 Email already sent to buyer. Skipping...");
+   //       return;
+   //    }
+
+   //    try {
+   //       const customMessage = `Hello "${buyerName}", the seller "${sellerName}" has messaged you about the product "${productName}" on Kabaad Mandi. Please login to continue your conversation.\n\n- Kabaad Mandi Team`;
+
+   //       const params = {
+   //          to_email: buyerEmail,
+   //          name: sellerName,
+   //          reply_to: sellerEmail,
+   //          message: customMessage,
+   //       };
+
+   //       await emailjs.send(serviceId, templateId, params, publicKey);
+
+   //       emailSentRef.current = true;
+   //       sessionStorage.setItem("emailSentToBuyer", "true");
+   //       console.log("📧 Email notification sent to buyer!");
+   //    } catch (error) {
+   //       console.error("❌ Failed to send email notification to buyer:", error);
+   //    }
+   // };
 
    const handleSend = () => {
       if (!text.trim() || !buyer?._id || !product?._id || !sellerId) return;
@@ -159,13 +209,27 @@ export default function SellerChatPage() {
          tempId,
       });
 
+      // ✅ Check if buyer is online before sending email
+      // socket.emit("checkBuyerStatus", { buyerId: buyer._id }, async (isOnline) => {
+      //    if (!isOnline && buyer?.email) {
+      //       const sellerName = session?.user?.name || "A Seller";
+      //       await sendOfflineEmailToBuyer(
+      //          buyer.email,
+      //          buyer.name,
+      //          product?.name,
+      //          sellerName,
+      //          sellerEmail
+      //       );
+      //    }
+      // });
+
       setText("");
    };
 
    if (status === "loading") return <div className="p-6 text-gray-500">Loading...</div>;
 
    return (
-      <div className="pt-6 px-6 max-w-3xl mx-auto h-[80vh] flex flex-col border rounded-lg shadow-md">
+      <div className="pt-6 px-6 max-w-3xl mx-auto h-[80vh] flex flex-col border rounded-lg shadow-md my-4">
          <h2 className="text-lg font-semibold">
             💬 Chat with {buyer?.name || "Buyer"} about{" "}
             <span className="text-green-700">{product?.name || "Product"}</span>

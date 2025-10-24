@@ -163,7 +163,11 @@ export function Navbar() {
                { label: "Chats", href: `/dashboard/seller/chat` },
                { label: "Active Subscription", href: `/dashboard/seller/subscription` },
             ],
-            admin: [{ label: "Dashboard", href: `/dashboard/admin` }],
+            admin: [
+               { label: "Dashboard", href: `/dashboard/admin` },
+               { label: "Manage Categories", href: `/dashboard/admin/categories` },
+               { label: "Stats", href: `/dashboard/admin/stats` },
+            ],
          };
 
          const items = menuItems[role?.toLowerCase()] || [];

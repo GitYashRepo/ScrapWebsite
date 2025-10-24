@@ -16,10 +16,10 @@ export default function SellerSubscriptionPage() {
 
 
    const plans = [
-      { id: "seller_monthly", label: "1 Month", price: 2500 },
+      { id: "seller_monthly", label: "1 Month", price: 2000 },
       { id: "seller_quarterly", label: "3 Months", price: 5000 },
-      { id: "seller_halfyear", label: "6 Months", price: 10000 },
-      { id: "seller_yearly", label: "1 Year", price: 15000 },
+      { id: "seller_halfyear", label: "6 Months", price: 7500 },
+      { id: "seller_yearly", label: "1 Year", price: 10000 },
    ];
 
    // ✅ Fetch seller details
@@ -150,6 +150,7 @@ export default function SellerSubscriptionPage() {
                   <h2 className="text-2xl font-bold mb-3 text-blue-700">Seller Details</h2>
                   <p><strong>Store Name:</strong> {sellerInfo.storeName}</p>
                   <p><strong>Owner Name:</strong> {sellerInfo.ownerName}</p>
+                  <p><strong>Seller Code:</strong> {sellerInfo.sellerCode}</p>
                   <p><strong>Email:</strong> {sellerInfo.email}</p>
                   <p><strong>Phone:</strong> {sellerInfo.phone}</p>
                   <p><strong>Address:</strong> {sellerInfo.address}, {sellerInfo.city}, {sellerInfo.state} - {sellerInfo.pinCode}</p>

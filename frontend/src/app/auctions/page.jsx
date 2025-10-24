@@ -75,6 +75,15 @@ const AuctionProductsPage = () => {
       router.push(`/dashboard/buyer/auction/${productId}`);
    };
 
+   if (auctions.length === 0 && !loading) {
+      return (
+         <div className="min-h-[80vh] flex flex-col justify-center items-center p-6">
+            <h2 className="text-xl font-semibold mb-4">No Active Auctions Available</h2>
+            <p className="text-gray-600">Please check back later for upcoming auctions.</p>
+         </div>
+      );
+   }
+
    return (
       <div className="min-h-[80vh] p-6">
          <h1 className="text-2xl font-bold mb-4">Active Auctions</h1>
