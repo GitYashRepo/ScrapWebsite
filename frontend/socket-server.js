@@ -16,7 +16,7 @@ const server = http.createServer(app);
 // Initialize Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000" || "https://kabaadimandi.vercel.app" || "https://www.kabaadmandi.com",
+    origin: ["http://localhost:3000" , "https://kabaadimandi.vercel.app" , "https://www.kabaadmandi.com"],
     methods: ["GET", "POST"],
     credentials: true,
   },

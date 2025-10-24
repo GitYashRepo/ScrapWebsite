@@ -89,6 +89,21 @@ export default function ProductPitchPage() {
 
       const bidValue = Number(bidAmount);
 
+      // --- Time validation ---
+      const now = new Date();
+      const startTime = new Date(product.auctionStart);
+      const endTime = new Date(product.auctionEnd);
+
+      if (now < startTime) {
+         toast.error("Bidding has not started yet!");
+         return;
+      }
+
+      if (now > endTime) {
+         toast.error("The auction has ended. You can no longer place bids!");
+         return;
+      }
+
       // Determine highest bid so far
       const highestBid = bids.length > 0 ? Math.max(...bids.map((b) => b.amount)) : 0;
       const startingPrice = product.pricePerKg;
@@ -247,9 +262,46 @@ export default function ProductPitchPage() {
                      className="w-full border rounded-lg p-2 mb-3"
                      placeholder="Enter your bid amount"
                   />
+                  {/* --- Determine auction status --- */}
+                  {(() => {
+                     const now = new Date();
+                     const startTime = new Date(product.auctionStart);
+                     const endTime = new Date(product.auctionEnd);
+
+                     if (now < startTime) {
+                        return (
+                           <p className="text-sm text-blue-600 mb-3">
+                              🕒 Auction hasn’t started yet. Starts on{" "}
+                              {startTime.toLocaleString()}.
+                           </p>
+                        );
+                     }
+
+                     if (now > endTime) {
+                        return (
+                           <p className="text-sm text-red-600 mb-3">
+                              ❌ Auction has ended. No more bids allowed.
+                           </p>
+                        );
+                     }
+
+                     return (
+                        <p className="text-sm text-green-700 mb-3">
+                           ✅ Auction is live! Place your bid below.
+                        </p>
+                     );
+                  })()}
+
                   <button
                      onClick={handlePlaceBid}
-                     className="bg-yellow-600 text-white py-2 px-4 rounded-lg hover:bg-yellow-700 w-full"
+                     disabled={
+                        new Date() < new Date(product.auctionStart) ||
+                        new Date() > new Date(product.auctionEnd)
+                     }
+                     className={`py-2 px-4 rounded-lg w-full text-white ${new Date() < new Date(product.auctionStart) || new Date() > new Date(product.auctionEnd)
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-yellow-600 hover:bg-yellow-700"
+                        }`}
                   >
                      Place Bid
                   </button>
