@@ -103,7 +103,7 @@ export default function AddAuctionProduct() {
             </div>
 
             <div>
-               <label className="block mb-1 font-semibold">Description</label>
+               <label className="block mb-1 font-semibold">Detailed Description <span className="text-red-500">( to Justify your Product Price )</span></label>
                <textarea
                   className="border w-full px-3 py-2 rounded"
                   value={form.description}
