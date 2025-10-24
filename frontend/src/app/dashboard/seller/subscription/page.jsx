@@ -150,6 +150,7 @@ export default function SellerSubscriptionPage() {
                   <h2 className="text-2xl font-bold mb-3 text-blue-700">Seller Details</h2>
                   <p><strong>Store Name:</strong> {sellerInfo.storeName}</p>
                   <p><strong>Owner Name:</strong> {sellerInfo.ownerName}</p>
+                  <p><strong>Seller Code:</strong> {sellerInfo.sellerCode}</p>
                   <p><strong>Email:</strong> {sellerInfo.email}</p>
                   <p><strong>Phone:</strong> {sellerInfo.phone}</p>
                   <p><strong>Address:</strong> {sellerInfo.address}, {sellerInfo.city}, {sellerInfo.state} - {sellerInfo.pinCode}</p>

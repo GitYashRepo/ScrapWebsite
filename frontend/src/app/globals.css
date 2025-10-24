@@ -148,6 +148,11 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* globals.css */
+.toast {
+  @apply text-2xl font-bold; /* text-lg for bigger font */
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

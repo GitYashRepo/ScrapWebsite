@@ -60,7 +60,7 @@ export async function GET(req) {
       );
 
     const bids = await Bid.find({ product: productId })
-      .populate("buyer", "name email address city pinCode phone")
+      .populate("buyer", "name email buyerCode address city pinCode phone")
       .sort({ amount: -1, createdAt: -1 });
 
     return new Response(JSON.stringify(bids), { status: 200 });

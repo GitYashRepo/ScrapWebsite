@@ -53,6 +53,28 @@ export default function ProductPitchPage() {
       fetchData();
    }, [id, session]);
 
+   // Auto-refresh only the bids every 5 seconds
+   useEffect(() => {
+      if (!id) return;
+
+      const interval = setInterval(async () => {
+         try {
+            const bidsRes = await fetch(`/api/bid?productId=${id}`);
+            const bidsData = await bidsRes.json();
+
+            // Only update if data structure is valid
+            if (Array.isArray(bidsData)) {
+               setBids(bidsData);
+            }
+         } catch (error) {
+            console.error("Error refreshing bids:", error);
+         }
+      }, 5000); // refresh every 5 seconds
+
+      return () => clearInterval(interval);
+   }, [id]);
+
+
    // Place a bid
    const handlePlaceBid = async () => {
       if (userRole !== "buyer") {
@@ -63,6 +85,27 @@ export default function ProductPitchPage() {
       if (!bidAmount || isNaN(bidAmount) || Number(bidAmount) <= 0) {
          toast.error("Please enter a valid bid amount!");
          return;
+      }
+
+      const bidValue = Number(bidAmount);
+
+      // Determine highest bid so far
+      const highestBid = bids.length > 0 ? Math.max(...bids.map((b) => b.amount)) : 0;
+      const startingPrice = product.pricePerKg;
+
+      // --- Validation rules ---
+      if (bids.length === 0) {
+         // First bid case
+         if (bidValue < startingPrice) {
+            toast.error(`Starting bid must be at least ₹${startingPrice}`);
+            return;
+         }
+      } else {
+         // Subsequent bids must be higher than current highest
+         if (bidValue <= highestBid) {
+            toast.error(`Your bid must be higher than the current highest bid (₹${highestBid})`);
+            return;
+         }
       }
 
       try {
@@ -159,7 +202,7 @@ export default function ProductPitchPage() {
                               >
                                  <span className="font-medium">
                                     {crown}
-                                    {bid.buyer?.name}
+                                    {bid.buyer?.buyerCode || "Anonymous"}
                                  </span>
                                  <span className={`font-bold ${textColor}`}>
                                     ₹{bid.amount}

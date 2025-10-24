@@ -72,6 +72,10 @@ export default function BuyerDashboardPage() {
                   <p className="text-lg font-semibold">{buyer.name}</p>
                </div>
                <div>
+                  <p className="text-gray-500 text-sm">Buyer Code</p>
+                  <p className="text-lg font-semibold">{buyer.buyerCode}</p>
+               </div>
+               <div>
                   <p className="text-gray-500 text-sm">Email</p>
                   <p className="text-lg font-semibold">{buyer.email}</p>
                </div>

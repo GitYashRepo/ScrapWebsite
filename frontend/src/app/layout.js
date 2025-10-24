@@ -35,7 +35,13 @@ export default function RootLayout({ children }) {
                {children}
             <WhatsAppWidget brandName="KabaadiMandi" phone = '+918003316534' />
             <Footer />
-            <Toaster />
+            <Toaster
+               position="top-center"
+               rich
+               toastOptions={{
+                 className: "toast px-6 py-4",
+               }}
+            />
          </Providers>
       </body>
     </html>
