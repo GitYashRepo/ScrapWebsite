@@ -78,7 +78,7 @@ export function Navbar() {
 
       return (
          <form
-            className="flex w-[100%] justify-center items-stretch gap-2"
+            className="w-[100%] justify-center items-stretch gap-2 hidden md:flex"
             onSubmit={handleSearch}
          >
             <Popover open={open} onOpenChange={setOpen}>
@@ -93,7 +93,6 @@ export function Navbar() {
                         placeholder="Search categories"
                         className="w-full"
                      />
-                     <Search className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
                   </div>
                </PopoverTrigger>
 
@@ -138,7 +137,7 @@ export function Navbar() {
             </Select>
 
             <Button type="submit" className="shrink-0">
-               <Search className="h-4 w-4 mr-1" /> Search
+               <Search className="h-4 w-4 mr-1" />
             </Button>
          </form>
       )
@@ -233,34 +232,37 @@ export function Navbar() {
 
    const BottomNav = () => (
       <nav className="w-full border-t border-b bg-background">
-         <div className="mx-auto flex max-w-[90vw] items-center gap-4 py-1">
-            <DropdownMenu>
-               <DropdownMenuTrigger asChild>
-                  <Button variant="secondary" className="inline-flex items-center gap-2">
-                     <Menu className="h-4 w-4" aria-hidden="true" />
-                     Categories
-                     <ChevronDown className="h-4 w-4 opacity-70" aria-hidden="true" />
-                  </Button>
-               </DropdownMenuTrigger>
-               <DropdownMenuContent className="">
-                  <DropdownMenuLabel>Browse categories</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {categories.map((cat) => (
-                     <DropdownMenuItem key={cat._id} asChild>
-                        <Link href={`/categories/${cat._id}`} className="flex items-center gap-2">
-                           <Store className="h-4 w-4" /> {cat.name}
-                        </Link>
-                     </DropdownMenuItem>
-                  ))}
-               </DropdownMenuContent>
-            </DropdownMenu>
-
-            <Link href="/shop" className="text-sm text-foreground hover:underline">
-               Shop
-            </Link>
-            <Link href="/auctions" className="text-sm text-foreground hover:underline">
-               Auctions
-            </Link>
+         <div className="mx-auto flex flex-col-reverse md:flex-row max-w-[90vw] items-center gap-4 py-1">
+            <div>
+               <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                     <Button variant="secondary" className="inline-flex items-center gap-2">
+                        <Menu className="h-4 w-4" aria-hidden="true" />
+                        Categories
+                        <ChevronDown className="h-4 w-4 opacity-70" aria-hidden="true" />
+                     </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="">
+                     <DropdownMenuLabel>Browse categories</DropdownMenuLabel>
+                     <DropdownMenuSeparator />
+                     {categories.map((cat) => (
+                        <DropdownMenuItem key={cat._id} asChild>
+                           <Link href={`/categories/${cat._id}`} className="flex items-center gap-2">
+                              <Store className="h-4 w-4" /> {cat.name}
+                           </Link>
+                        </DropdownMenuItem>
+                     ))}
+                  </DropdownMenuContent>
+               </DropdownMenu>
+            </div>
+            <div className="flex flex-row gap-2">
+               <Link href="/shop" className="text-sm text-foreground hover:underline">
+                  Shop
+               </Link>
+               <Link href="/auctions" className="text-sm text-foreground hover:underline">
+                  Auctions
+               </Link>
+            </div>
          </div>
       </nav>
    )
@@ -277,48 +279,42 @@ export function Navbar() {
             <SheetHeader>
                <SheetTitle>Menu</SheetTitle>
             </SheetHeader>
-            <div className="mt-4 space-y-3">
+            <div className="mt-4 space-y-3 pl-2">
                <SearchBar />
                <div className="grid gap-2 pt-3">
-                  <Link href="#" className="text-sm hover:underline">
-                     Become a Regular Seller
+                  <Link href="/about" className="text-sm hover:underline">
+                     About Us
                   </Link>
-                  <Link href="#" className="text-sm hover:underline">
-                     Become a Premium Seller
+                  <Link href="/shop" className="text-sm hover:underline">
+                     Shop
                   </Link>
-                  <Link href="#" className="text-sm hover:underline">
-                     Contact Us
-                  </Link>
-                  <Link href="#" className="text-sm hover:underline">
-                     Our Blogs
+                  <Link href="/auctions" className="text-sm hover:underline">
+                     Auctions
                   </Link>
                </div>
                <div className="grid gap-2 pt-4">
-                  <DropdownMenu>
-                     <DropdownMenuTrigger asChild>
-                        <Button variant="secondary" className="justify-between">
-                           Categories
-                           <ChevronDown className="h-4 w-4 opacity-70" />
-                        </Button>
-                     </DropdownMenuTrigger>
-                     <DropdownMenuContent className="w-64">
-                        <DropdownMenuLabel>Browse categories</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>Metals</DropdownMenuItem>
-                        <DropdownMenuItem>Plastics</DropdownMenuItem>
-                        <DropdownMenuItem>Paper</DropdownMenuItem>
-                        <DropdownMenuItem>Electronics</DropdownMenuItem>
-                     </DropdownMenuContent>
-                  </DropdownMenu>
+                  <Select value={category} onValueChange={setCategory}>
+                     <SelectTrigger className="w-auto">
+                        <SelectValue placeholder="All categories" />
+                     </SelectTrigger>
+                     <SelectContent>
+                        <SelectItem value="all">All categories</SelectItem>
+                        {categories.map((cat) => (
+                           <SelectItem key={cat._id} value={cat.name.toLowerCase()}>
+                              {cat.name}
+                           </SelectItem>
+                        ))}
+                     </SelectContent>
+                  </Select>
 
-                  <Link href="#" className="text-sm hover:underline">
-                     Auctions
+                  <Link href="/privacy-policy" className="text-sm hover:underline">
+                     Privacy Policy
                   </Link>
-                  <Link href="#" className="text-sm hover:underline">
-                     Tenders
+                  <Link href="/terms-conditions" className="text-sm hover:underline">
+                     Terms & Conditions
                   </Link>
-                  <Link href="#" className="text-sm hover:underline">
-                     Make an Offer
+                  <Link href="/refund-cancellation" className="text-sm hover:underline">
+                     Refund & Cancellation
                   </Link>
                </div>
 
