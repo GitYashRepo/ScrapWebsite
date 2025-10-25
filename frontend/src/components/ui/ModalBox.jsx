@@ -4,7 +4,7 @@ export default function ModalBox({ isOpen, onClose, title, children }) {
    if (!isOpen) return null;
 
    return (
-      <div className="fixed bottom-24 right-5 z-50 border rounded-xl bg-black/50">
+      <div className=" fixed z-50 flex items-center justify-center sm:items-end sm:justify-end sm:bottom-24 sm:right-5 bg-black/50">
          <div className="bg-white rounded-lg p-6 max-w-lg w-full">
             <div className="flex justify-between items-center mb-4">
                <h2 className="text-xl font-bold">{title}</h2>

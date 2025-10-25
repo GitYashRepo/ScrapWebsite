@@ -60,7 +60,7 @@ export default function SmoothScroller() {
 
    return (
       <div className="fixed bottom-0 left-0 w-full z-50">
-         <div className="overflow-hidden flex items-center bg-blue-600 h-24 sm:h-20 w-full">
+         <div className="overflow-hidden flex items-center bg-blue-600 h-16 sm:h-24 w-full">
             <div className="scroller-container w-full">
                <div className="scroller-content flex-nowrap flex items-center gap-4 sm:gap-6" ref={contentRef}>
                   {scrollItems.map((item, index) => (
