@@ -6,6 +6,8 @@ import SideBar from "@/components/sidebar/sidebar";
 import WhatsAppWidget from "@/components/whatsapp/whatsapp";
 import { Providers } from "@/components/Providers/Providers";
 import { Toaster } from "@/components/ui/sonner"
+import AdDisplayModal from "@/components/ad/AdDisplayModal";
+import AdTicker from "@/components/ad/AdTicker";
 
 
 const geistSans = Geist({
@@ -32,6 +34,8 @@ export default function RootLayout({ children }) {
          <Providers>
             <SideBar />
             <Navbar />
+            <AdDisplayModal />
+            <AdTicker />
                {children}
             <WhatsAppWidget brandName="KabaadiMandi" phone = '+918003316534' />
             <Footer />

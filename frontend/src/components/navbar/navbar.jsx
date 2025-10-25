@@ -157,11 +157,13 @@ export function Navbar() {
             buyer: [
                { label: "Dashboard", href: `/dashboard/buyer` },
                { label: "Enquiries", href: `/dashboard/buyer/enquiries` },
+               { label: "Run Ads", href: `/dashboard/ads` },
             ],
             seller: [
                { label: "Dashboard", href: `/dashboard/seller` },
                { label: "Chats", href: `/dashboard/seller/chat` },
                { label: "Active Subscription", href: `/dashboard/seller/subscription` },
+               { label: "Run Ads", href: `/dashboard/ads` },
             ],
             admin: [
                { label: "Dashboard", href: `/dashboard/admin` },

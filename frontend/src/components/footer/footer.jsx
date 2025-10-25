@@ -63,7 +63,7 @@ export default function Footer() {
          </div>
 
          {/* Payment Methods */}
-         <div className="border-t bg-muted/40 py-6">
+         <div className="border-t bg-muted/40 py-6 pb-24">
             <div className="max-w-[90vw] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 px-6">
                <p className="text-xs text-muted-foreground text-center sm:text-left">
                   © {new Date().getFullYear()} Kabaad Mandi. All rights reserved.
