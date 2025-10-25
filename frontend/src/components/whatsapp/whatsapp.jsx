@@ -33,7 +33,7 @@ export default function WhatsAppWidget({ brandName = "KabaadiMandi", phone = '+9
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
             className={cn(
-               "fixed z-50 bottom-2 right-4 size-14 rounded-full",
+               "fixed z-50 bottom-16 sm:bottom-26 right-1 size-14 rounded-full",
                "flex items-center justify-center cursor-pointer",
             )}
          >
@@ -41,21 +41,21 @@ export default function WhatsAppWidget({ brandName = "KabaadiMandi", phone = '+9
          </button>
 
          {/* Panel */}
+         {/* Panel */}
          {open && (
             <section
                role="dialog"
                aria-modal="true"
                aria-label="WhatsApp styled chat"
                className={cn(
-                  "fixed z-50 h-[80vh]",
-                  "right-8 bottom-20 sm:bottom-16",
-                  "w-[320px] sm:w-[360px]",
-                  "rounded-xl shadow-2xl border border-black/5 overflow-hidden",
-                  "bg-[#f6f7f5]",
+                  "fixed z-50 right-2 sm:right-8 bottom-32 sm:bottom-16",
+                  "w-[320px] sm:w-[360px] h-[60vh] sm:h-[80vh]",
+                  "rounded-xl shadow-2xl border border-black/5 overflow-hidden flex flex-col",
+                  "bg-[#f6f7f5]"
                )}
             >
                {/* Header */}
-               <header className="bg-[#075e54] text-white px-4 py-3 flex items-center gap-3">
+               <header className="bg-[#075e54] text-white px-4 py-3 flex items-center gap-3 shrink-0">
                   <div className="size-8 rounded-full bg-white/15 grid place-items-center text-white font-semibold">
                      <span className="sr-only">{brandName} avatar</span>
                      <span aria-hidden="true">{brandName.charAt(0)}</span>
@@ -80,9 +80,9 @@ export default function WhatsAppWidget({ brandName = "KabaadiMandi", phone = '+9
                   </button>
                </header>
 
-               {/* Messages area */}
+               {/* Scrollable Messages */}
                <div
-                  className={cn("p-4 space-y-2 overflow-y-auto h-[calc(80vh-165px)]")}
+                  className={cn("flex-1 overflow-y-auto p-4 space-y-2")}
                   style={{
                      backgroundColor: "#f6f7f5",
                      backgroundImage:
@@ -90,9 +90,7 @@ export default function WhatsAppWidget({ brandName = "KabaadiMandi", phone = '+9
                      backgroundSize: "18px 18px",
                   }}
                >
-                  <IncomingBubble>
-                     Namaste 🙏,{"\n"}Welcome to {brandName}
-                  </IncomingBubble>
+                  <IncomingBubble>Namaste 🙏,{"\n"}Welcome to {brandName}</IncomingBubble>
 
                   <IncomingBubble>
                      <div className="space-y-3">
@@ -101,8 +99,7 @@ export default function WhatsAppWidget({ brandName = "KabaadiMandi", phone = '+9
                            href="/signup"
                            className={cn(
                               "inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium",
-                              "border border-[#25d366] text-[#25d366] bg-white",
-                              "hover:bg-[#25d366]/5 transition-colors",
+                              "border border-[#25d366] text-[#25d366] bg-white hover:bg-[#25d366]/5 transition-colors"
                            )}
                         >
                            Register as Buyer
@@ -117,8 +114,7 @@ export default function WhatsAppWidget({ brandName = "KabaadiMandi", phone = '+9
                            href="/signup"
                            className={cn(
                               "inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium",
-                              "border border-[#25d366] text-[#25d366] bg-white",
-                              "hover:bg-[#25d366]/5 transition-colors",
+                              "border border-[#25d366] text-[#25d366] bg-white hover:bg-[#25d366]/5 transition-colors"
                            )}
                         >
                            Register as Seller
@@ -127,8 +123,8 @@ export default function WhatsAppWidget({ brandName = "KabaadiMandi", phone = '+9
                   </IncomingBubble>
                </div>
 
-               {/* Composer */}
-               <footer className="px-3 py-2 bg-[#f6f7f5] border-t border-black/5">
+               {/* Sticky Footer */}
+               <footer className="px-3 py-2 bg-[#f6f7f5] border-t border-black/5 shrink-0">
                   <div className="flex items-center gap-2 bg-white rounded-full px-4 py-2 shadow-sm">
                      <input
                         className="flex-1 bg-transparent outline-none text-sm placeholder:text-[#667085]"
@@ -137,8 +133,8 @@ export default function WhatsAppWidget({ brandName = "KabaadiMandi", phone = '+9
                         onChange={(e) => setMessage(e.target.value)}
                         onKeyDown={(e) => {
                            if (e.key === "Enter" && !e.shiftKey) {
-                              e.preventDefault()
-                              send()
+                              e.preventDefault();
+                              send();
                            }
                         }}
                         aria-label="Message to send on WhatsApp"
