@@ -56,7 +56,7 @@ export default function AdDisplayModal() {
             )}
             {ad.companyWebsite && (
                <a
-                  href={ad.companyWebsite}
+                  href={`https://${ad.companyWebsite}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 underline"
