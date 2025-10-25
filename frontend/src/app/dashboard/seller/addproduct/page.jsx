@@ -122,7 +122,7 @@ export default function AddProduct() {
                </select>
             </div>
 
-            <div>
+            {/* <div>
                <label className="block mb-1 font-semibold">Image URL</label>
                <input
                   type="text"
@@ -131,6 +131,49 @@ export default function AddProduct() {
                   onChange={(e) => setForm({ ...form, images: [e.target.value] })}
                   required
                />
+            </div> */}
+
+            <div>
+               <label className="block mb-1 font-semibold">Upload Product Image</label>
+               <input
+                  type="file"
+                  accept="image/*"
+                  className="border w-full px-3 py-2 rounded"
+                  onChange={async (e) => {
+                     const file = e.target.files[0];
+                     if (!file) return;
+
+                     // Size validation on frontend (for better UX)
+                     const MAX_SIZE_MB = 2;
+                     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+                        toast.error(`File too large (max ${MAX_SIZE_MB} MB)`);
+                        return;
+                     }
+
+                     const formData = new FormData();
+                     formData.append("file", file);
+
+                     const res = await fetch("/api/upload", {
+                        method: "POST",
+                        body: formData,
+                     });
+
+                     const data = await res.json();
+                     if (res.ok) {
+                        toast.success("Image uploaded successfully!");
+                        setForm({ ...form, images: [data.url] });
+                     } else {
+                        toast.error(data.error || "Image upload failed!");
+                     }
+                  }}
+               />
+               {form.images[0] && (
+                  <img
+                     src={form.images[0]}
+                     alt="Preview"
+                     className="mt-3 w-32 h-32 object-cover rounded border"
+                  />
+               )}
             </div>
 
             <button

@@ -124,7 +124,7 @@ export default function SignupPage() {
                <>
                   <input
                      name="storeName"
-                     placeholder="Store Name"
+                     placeholder="Company Name"
                      required
                      onChange={handleChange}
                      className="w-full p-2 border rounded"
