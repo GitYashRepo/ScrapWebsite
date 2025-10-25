@@ -68,12 +68,26 @@ export default function AdUploadPage() {
 
       setLoading(true);
       try {
-         // ✅ Ensure website always starts with "www."
+         // Ensure website always starts with "www."
          const website = form.companyWebsite.startsWith("www.")
             ? form.companyWebsite
-            : `www.${form.companyWebsite}`;
+            : form.companyWebsite
+               ? `www.${form.companyWebsite}`
+               : "";
 
-         const payload = { ...form, companyWebsite: website };
+         const now = new Date();
+         const adStart = now;
+         const adEnd = new Date(now.getTime() + form.durationHours * 60 * 60 * 1000); // duration in ms
+         const totalAmount = form.durationHours * 50; // ₹50 per hour
+
+         const payload = {
+            ...form,
+            companyWebsite: website,
+            adStart,
+            adEnd,
+            totalAmount,
+            status: "running", // start immediately
+         };
 
          const res = await fetch("/api/ads", {
             method: "POST",
