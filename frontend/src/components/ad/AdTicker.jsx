@@ -66,13 +66,13 @@ export default function SmoothScroller() {
 
    return (
       <div className="fixed bottom-0 left-0 w-full z-50">
-         <div className="overflow-hidden bg-blue-600 h-12 w-full">
+         <div className="overflow-hidden flex items-center bg-blue-600 h-20 w-full">
             <div className="scroller-container">
                <div className="scroller-content" ref={contentRef}>
                   {scrollItems.map((item, index) => (
                      <div
                         key={`${item._id}-${index}`}
-                        className="inline-flex items-center gap-6 px-10 py-2 text-white text-sm font-medium whitespace-nowrap flex-shrink-0"
+                        className="inline-flex items-center gap-6 px-10 py-2 text-white text-2xl font-medium whitespace-nowrap flex-shrink-0"
                      >
                         <div>
                            <GiFastArrow size={34} />
@@ -81,7 +81,7 @@ export default function SmoothScroller() {
                         <span>{item.title}</span>
                         {item.discountPrice ? (
                            <span>
-                              ₹{item.discountPrice} <span className="line-through text-gray-200 text-xs">₹{item.price}</span>
+                              ₹{item.discountPrice} <span className="line-through text-gray-200 pl-4">₹{item.price}</span>
                            </span>
                         ) : (
                            <span>₹{item.price}</span>
@@ -89,7 +89,7 @@ export default function SmoothScroller() {
                         <span><a href={`https://${item.companyWebsite}`} target="_blank" rel="noopener noreferrer">WEB:- {item.companyWebsite}</a></span>
                         <span>Mob:- {item.contactNumber}</span>
                         {item.offerDetails && <span className="text-yellow-300 font-semibold">🎉 {item.offerDetails}</span>}
-                        <span className="text-gray-200 text-xs">• Runs till {new Date(item.adEnd).toLocaleDateString()}</span>
+                        <p className="text-gray-200 text-lg">• Runs till {new Date(item.adEnd).toLocaleDateString()}</p>
                         <div>
                            <GiFastArrow size={34} />
                         </div>

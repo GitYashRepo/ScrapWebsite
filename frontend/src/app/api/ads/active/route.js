@@ -8,6 +8,16 @@ export async function GET() {
   try {
     const now = new Date();
 
+    await Ad.updateMany(
+      { paymentStatus: "paid", status: "scheduled", adStart: { $lte: now } },
+      { $set: { status: "running" } }
+    );
+
+    await Ad.updateMany(
+      { status: "running", adEnd: { $lt: now } },
+      { $set: { status: "expired" } }
+    );
+
     // Fetch only ads that are paid and currently running
     const activeAds = await Ad.find({
       paymentStatus: "paid",
