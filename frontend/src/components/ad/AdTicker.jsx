@@ -89,7 +89,7 @@ export default function SmoothScroller() {
                         <span><a href={`https://${item.companyWebsite}`} target="_blank" rel="noopener noreferrer">WEB:- {item.companyWebsite}</a></span>
                         <span>Mob:- {item.contactNumber}</span>
                         {item.offerDetails && <span className="text-yellow-300 font-semibold">🎉 {item.offerDetails}</span>}
-                        <p className="text-gray-200 text-lg">• Runs till {new Date(item.adEnd).toLocaleDateString()}</p>
+                        <p className="text-gray-200 text-lg">• Runs till {new Date(item.adEnd).toLocaleString()}</p>
                         <div>
                            <GiFastArrow size={34} />
                         </div>
