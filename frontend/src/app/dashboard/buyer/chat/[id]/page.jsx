@@ -286,7 +286,7 @@ export default function BuyerChatPage() {
             <div ref={messagesRef} />
          </div>
 
-         <div className="flex gap-2">
+         <div className="flex flex-col md:flex-row gap-2">
             <input
                value={message}
                onChange={(e) => setMessage(e.target.value)}
@@ -296,7 +296,7 @@ export default function BuyerChatPage() {
             />
             <button
                onClick={handleSend}
-               className="bg-blue-600 text-white px-4 rounded-lg hover:bg-blue-700"
+               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
             >
                Send
             </button>

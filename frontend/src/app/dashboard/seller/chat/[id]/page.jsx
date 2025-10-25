@@ -264,7 +264,7 @@ export default function SellerChatPage() {
             <div ref={messagesEndRef} />
          </div>
 
-         <div className="p-3 border-t flex gap-3 bg-white">
+         <div className="p-3 border-t flex flex-col md:flex-row gap-3 bg-white">
             <input
                type="text"
                className="flex-1 border rounded-lg px-3 py-2"
