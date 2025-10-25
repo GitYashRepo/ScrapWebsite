@@ -5,13 +5,13 @@ const AdSchema = new mongoose.Schema(
     companyName: { type: String, required: true },
     companyEmail: { type: String, required: true },
     companyWebsite: { type: String },
-    contactNumber: { type: String },
+    contactNumber: { type: String, required: true },
 
     title: { type: String, required: true },
     description: { type: String, required: true },
 
     productImages: [{ type: String }], // Uploaded ad images
-    price: { type: Number, required: true },
+    price: { type: Number, },
     discountPrice: { type: Number },
     offerDetails: { type: String },
 

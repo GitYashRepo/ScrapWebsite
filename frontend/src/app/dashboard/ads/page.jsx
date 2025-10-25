@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Script from "next/script";
 import { toast } from "sonner";
@@ -9,6 +9,7 @@ export default function AdUploadPage() {
    const { data: session } = useSession();
    const [loading, setLoading] = useState(false);
    const [uploading, setUploading] = useState(false);
+   const [lastCreatedAd, setLastCreatedAd] = useState(null);
 
    const [form, setForm] = useState({
       companyName: "",
@@ -67,10 +68,17 @@ export default function AdUploadPage() {
 
       setLoading(true);
       try {
+         // ✅ Ensure website always starts with "www."
+         const website = form.companyWebsite.startsWith("www.")
+            ? form.companyWebsite
+            : `www.${form.companyWebsite}`;
+
+         const payload = { ...form, companyWebsite: website };
+
          const res = await fetch("/api/ads", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(form),
+            body: JSON.stringify(payload),
          });
 
          const data = await res.json();
@@ -90,12 +98,23 @@ export default function AdUploadPage() {
                const verifyRes = await fetch("/api/ads/verify", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(response),
+                  body: JSON.stringify({
+                     razorpay_order_id: response.razorpay_order_id,
+                     razorpay_payment_id: response.razorpay_payment_id,
+                     razorpay_signature: response.razorpay_signature,
+                  }),
                });
 
                const verifyData = await verifyRes.json();
+
                if (verifyRes.ok) {
-                  toast.success("✅ Ad payment successful! Your ad is now running.");
+                  setLastCreatedAd(verifyData.ad);
+                  if (verifyData.ad.status === "scheduled") {
+                     toast.info(`🕓 Your ad is queued and will start in approximately ${verifyData.willStartIn}.`);
+                  } else {
+                     toast.success("✅ Ad payment successful! Your ad is now running.");
+                  }
+                  // Reset form after success
                   setForm({
                      companyName: "",
                      companyEmail: "",
@@ -109,6 +128,8 @@ export default function AdUploadPage() {
                      productImages: [""],
                      durationHours: 1,
                   });
+
+                  localStorage.setItem("lastCreatedAd", JSON.stringify(verifyData.ad));
                } else {
                   toast.error("❌ Payment verification failed!");
                }
@@ -130,9 +151,41 @@ export default function AdUploadPage() {
       }
    };
 
+
+   useEffect(() => {
+      const savedAd = localStorage.getItem("lastCreatedAd");
+      if (savedAd) {
+         setLastCreatedAd(JSON.parse(savedAd))
+      };
+   }, []);
+
+   useEffect(() => {
+      if (lastCreatedAd) localStorage.setItem("lastCreatedAd", JSON.stringify(lastCreatedAd));
+   }, [lastCreatedAd]);
+
+
    return (
       <div className="max-w-2xl mx-auto p-6 min-h-[90vh]">
          <Script src="https://checkout.razorpay.com/v1/checkout.js" />
+
+         {/* ✅ Show Ad Start/End Info */}
+         {lastCreatedAd && (
+            <div className="mt-6 p-4 bg-blue-50 border rounded text-blue-800">
+               <h2 className="font-semibold text-lg mb-2">Ad Scheduled Info</h2>
+               <p>
+                  <strong>Status:</strong> {lastCreatedAd.status}
+               </p>
+               <p>
+                  <strong>Start:</strong>{" "}
+                  {new Date(lastCreatedAd.adStart).toLocaleString()}
+               </p>
+               <p>
+                  <strong>End:</strong>{" "}
+                  {new Date(lastCreatedAd.adEnd).toLocaleString()}
+               </p>
+            </div>
+         )}
+
          <h1 className="text-3xl font-bold mb-6 text-center text-blue-700">
             Upload Advertisement
          </h1>
@@ -140,7 +193,7 @@ export default function AdUploadPage() {
          <form onSubmit={handleSubmit} className="space-y-4">
             {/* Company Info */}
             <div>
-               <label className="block mb-1 font-semibold">Company Name</label>
+               <label className="block mb-1 font-semibold">Company Name <span className="text-red-600">*</span></label>
                <input
                   type="text"
                   className="border w-full px-3 py-2 rounded"
@@ -151,7 +204,7 @@ export default function AdUploadPage() {
             </div>
 
             <div>
-               <label className="block mb-1 font-semibold">Company Email</label>
+               <label className="block mb-1 font-semibold">Company Email <span className="text-red-600">*</span></label>
                <input
                   type="email"
                   className="border w-full px-3 py-2 rounded"
@@ -161,20 +214,24 @@ export default function AdUploadPage() {
                />
             </div>
 
-            <div className="flex gap-4">
-               <div className="flex-1">
-                  <label className="block mb-1 font-semibold">Company Website</label>
+            <div className="flex flex-col gap-2">
+               <label className="block mb-1 font-semibold">Company Website <span className="text-orange-600">: ( Optional )</span></label>
+               <div className="flex border rounded overflow-hidden">
+                  <span className="px-3 py-2 bg-gray-100 text-gray-600 select-none">www.</span>
                   <input
                      type="text"
-                     className="border w-full px-3 py-2 rounded"
+                     className="flex-1 px-3 py-2 outline-none"
+                     placeholder="example.com"
                      value={form.companyWebsite}
-                     onChange={(e) =>
-                        setForm({ ...form, companyWebsite: e.target.value })
-                     }
+                     onChange={(e) => {
+                        // Prevent user from typing "www." again
+                        const value = e.target.value.replace(/^www\./i, "");
+                        setForm({ ...form, companyWebsite: value });
+                     }}
                   />
                </div>
                <div className="flex-1">
-                  <label className="block mb-1 font-semibold">Contact Number</label>
+                  <label className="block mb-1 font-semibold">Contact Number <span className="text-red-600">*</span></label>
                   <input
                      type="text"
                      className="border w-full px-3 py-2 rounded"
@@ -182,13 +239,14 @@ export default function AdUploadPage() {
                      onChange={(e) =>
                         setForm({ ...form, contactNumber: e.target.value })
                      }
+                     required
                   />
                </div>
             </div>
 
             {/* Ad Info */}
             <div>
-               <label className="block mb-1 font-semibold">Ad Title</label>
+               <label className="block mb-1 font-semibold">Ad Title <span className="text-red-600">*</span></label>
                <input
                   type="text"
                   className="border w-full px-3 py-2 rounded"
@@ -199,7 +257,7 @@ export default function AdUploadPage() {
             </div>
 
             <div>
-               <label className="block mb-1 font-semibold">Description</label>
+               <label className="block mb-1 font-semibold">Description <span className="text-red-600">*</span></label>
                <textarea
                   className="border w-full px-3 py-2 rounded"
                   rows={4}
@@ -213,18 +271,17 @@ export default function AdUploadPage() {
 
             <div className="flex gap-4">
                <div className="flex-1">
-                  <label className="block mb-1 font-semibold">Price</label>
+                  <label className="block mb-1 font-semibold">Price <span className="text-orange-600">: ( Optional )</span></label>
                   <input
                      type="number"
                      className="border w-full px-3 py-2 rounded"
                      value={form.price}
                      onChange={(e) => setForm({ ...form, price: e.target.value })}
-                     required
                   />
                </div>
 
                <div className="flex-1">
-                  <label className="block mb-1 font-semibold">Discounted Price</label>
+                  <label className="block mb-1 font-semibold">Discounted Price <span className="text-orange-600">: ( Optional )</span></label>
                   <input
                      type="number"
                      className="border w-full px-3 py-2 rounded"
@@ -237,7 +294,7 @@ export default function AdUploadPage() {
             </div>
 
             <div>
-               <label className="block mb-1 font-semibold">Offer Details</label>
+               <label className="block mb-1 font-semibold">Offer Details <span className="text-orange-600">: ( Optional )</span></label>
                <input
                   type="text"
                   className="border w-full px-3 py-2 rounded"
@@ -250,13 +307,12 @@ export default function AdUploadPage() {
 
             {/* Image Upload */}
             <div>
-               <label className="block mb-1 font-semibold">Upload Ad Image</label>
+               <label className="block mb-1 font-semibold">Upload Ad Image <span className="text-orange-600">: ( Optional )</span></label>
                <input
                   type="file"
                   accept="image/*"
                   onChange={handleImageUpload}
                   className="border w-full px-3 py-2 rounded"
-                  required
                />
                {uploading && (
                   <p className="text-sm text-gray-500 mt-1">Uploading...</p>
@@ -272,7 +328,7 @@ export default function AdUploadPage() {
 
             {/* Duration */}
             <div>
-               <label className="block mb-1 font-semibold">Ad Duration (hours)</label>
+               <label className="block mb-1 font-semibold">Ad Duration (hours) <span className="text-red-600">*</span></label>
                <input
                   type="number"
                   min="1"
@@ -297,7 +353,7 @@ export default function AdUploadPage() {
             >
                {loading ? "Processing..." : "Create Ad & Pay"}
             </button>
-         </form>
-      </div>
+         </form >
+      </div >
    );
 }

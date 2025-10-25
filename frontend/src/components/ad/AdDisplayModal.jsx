@@ -2,26 +2,23 @@
 
 import { useEffect, useState } from "react";
 import ModalBox from "@/components/ui/ModalBox";
+import { usePathname } from "next/navigation";
 
 export default function AdDisplayModal() {
    const [ad, setAd] = useState(null);
    const [showModal, setShowModal] = useState(false);
+   const pathname = usePathname();
 
    useEffect(() => {
-      // Show ad only once per session
-      if (sessionStorage.getItem("adShown")) return;
-
       const fetchAd = async () => {
          try {
             const res = await fetch("/api/ads/active");
             const data = await res.json();
 
             if (res.ok && data.length > 0) {
-               // Pick a random ad (optional)
                const randomAd = data[Math.floor(Math.random() * data.length)];
                setAd(randomAd);
                setShowModal(true);
-               sessionStorage.setItem("adShown", "true");
             }
          } catch (err) {
             console.error("Error loading ad:", err);
@@ -29,7 +26,7 @@ export default function AdDisplayModal() {
       };
 
       fetchAd();
-   }, []);
+   }, [pathname]);
 
    if (!ad) return null;
 
@@ -40,7 +37,7 @@ export default function AdDisplayModal() {
                <img
                   src={ad.productImages[0]}
                   alt={ad.title}
-                  className="w-64 h-64 object-cover rounded-lg border"
+                  className="w-full h-auto object-cover rounded-lg border"
                />
             )}
             <p className="text-lg font-semibold text-gray-800">{ad.description}</p>
@@ -64,7 +61,7 @@ export default function AdDisplayModal() {
                   rel="noopener noreferrer"
                   className="text-blue-600 underline"
                >
-                  Visit {ad.companyName}
+                  Visit {ad.companyName} - {ad.companyWebsite}
                </a>
             )}
          </div>

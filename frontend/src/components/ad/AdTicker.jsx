@@ -1,5 +1,4 @@
 "use client"
-
 import { useEffect, useRef, useState } from "react"
 import { GiFastArrow } from "react-icons/gi"
 
@@ -87,7 +86,7 @@ export default function SmoothScroller() {
                         ) : (
                            <span>₹{item.price}</span>
                         )}
-                        <span>WEB:- {item.companyWebsite}</span>
+                        <span><a href={`https://${item.companyWebsite}`} target="_blank" rel="noopener noreferrer">WEB:- {item.companyWebsite}</a></span>
                         <span>Mob:- {item.contactNumber}</span>
                         {item.offerDetails && <span className="text-yellow-300 font-semibold">🎉 {item.offerDetails}</span>}
                         <span className="text-gray-200 text-xs">• Runs till {new Date(item.adEnd).toLocaleDateString()}</span>
