@@ -99,15 +99,21 @@ export default function AddAuctionProduct() {
 
       try {
          setUploading(true);
-         // 1️⃣ Get one-time handle URL from server
-         const res = await fetch("/api/blob-upload");
-         const { url: handleUploadUrl } = await res.json();
 
-         // 2️⃣ Upload directly
-         const blob = await upload(file, { handleUploadUrl });
+         const formData = new FormData();
+         formData.append('file', file);
 
-         toast.success("Image uploaded successfully!");
-         setForm({ ...form, images: [blob.url] });
+         const res = await fetch('/api/blob-upload', {
+            method: 'POST',
+            body: formData,
+         });
+
+         const data = await res.json();
+
+         if (!res.ok) throw new Error(data.error || 'Upload failed');
+
+         toast.success('Image uploaded successfully!');
+         setForm({ ...form, images: [data.url] });
       } catch (err) {
          console.error("Upload failed:", err);
          toast.error("Image upload failed!");

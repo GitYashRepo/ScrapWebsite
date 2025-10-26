@@ -41,15 +41,20 @@ export default function AdUploadPage() {
       try {
          setUploading(true);
 
-         // 1️⃣ Get one-time handle URL from server
-         const res = await fetch("/api/blob-upload");
-         const { url: handleUploadUrl } = await res.json();
+         const formData = new FormData();
+         formData.append('file', file);
 
-         // 2️⃣ Upload directly
-         const blob = await upload(file, { handleUploadUrl });
+         const res = await fetch('/api/blob-upload', {
+            method: 'POST',
+            body: formData,
+         });
 
-         toast.success("Image uploaded successfully!");
-         setForm({ ...form, images: [blob.url] });
+         const data = await res.json();
+
+         if (!res.ok) throw new Error(data.error || 'Upload failed');
+
+         toast.success('Image uploaded successfully!');
+         setForm({ ...form, images: [data.url] });
       } catch (error) {
          console.error("Upload failed:", error);
          toast.error(error.message || "Upload failed");
