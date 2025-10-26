@@ -41,19 +41,15 @@ export default function AdUploadPage() {
       try {
          setUploading(true);
 
-         // Step 1: Ask your API for a one-time upload URL
-         const res = await fetch("/api/blob-upload", { method: "POST" });
-         const { url } = await res.json();
+         // 1️⃣ Get one-time handle URL from server
+         const res = await fetch("/api/blob-upload");
+         const { url: handleUploadUrl } = await res.json();
 
-         if (!url) throw new Error("Failed to get upload URL");
-
-         // Step 2: Upload the file directly to Vercel Blob via client SDK
-         const blob = await upload(url, file, {
-            access: "public",
-         });
+         // 2️⃣ Upload directly
+         const blob = await upload(file, { handleUploadUrl });
 
          toast.success("Image uploaded successfully!");
-         setForm({ ...form, productImages: [blob.url] });
+         setForm({ ...form, images: [blob.url] });
       } catch (error) {
          console.error("Upload failed:", error);
          toast.error(error.message || "Upload failed");
@@ -347,7 +343,7 @@ export default function AdUploadPage() {
                <input
                   type="file"
                   accept="image/*"
-                  onChange={handleImageUpload}
+                  onChange={(e) => handleImageUpload(e.target.files[0])}
                   className="border w-full px-3 py-2 rounded"
                />
                {uploading && (

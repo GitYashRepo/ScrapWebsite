@@ -88,7 +88,6 @@ export default function AddAuctionProduct() {
    };
 
    const handleImageUpload = async (e) => {
-      const file = e.target.files[0];
       if (!file) return;
 
       const MAX_SIZE_MB = 2;
@@ -97,10 +96,15 @@ export default function AddAuctionProduct() {
          return;
       }
 
-      setUploading(true);
       try {
-         // Directly upload to Vercel Blob
-         const blob = await upload(file.name, file, { access: "public" });
+         setUploading(true);
+         // 1️⃣ Get one-time handle URL from server
+         const res = await fetch("/api/blob-upload");
+         const { url: handleUploadUrl } = await res.json();
+
+         // 2️⃣ Upload directly
+         const blob = await upload(file, { handleUploadUrl });
+
          toast.success("Image uploaded successfully!");
          setForm({ ...form, images: [blob.url] });
       } catch (err) {
@@ -219,7 +223,7 @@ export default function AddAuctionProduct() {
                   type="file"
                   accept="image/*"
                   className="border w-full px-3 py-2 rounded"
-                  onChange={handleImageUpload}
+                  onChange={(e) => handleImageUpload(e.target.files[0])}
                />
                {uploading && <p className="text-sm text-gray-500 mt-1">Uploading...</p>}
                {form.images[0] && (

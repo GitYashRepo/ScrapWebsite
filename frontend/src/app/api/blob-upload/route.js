@@ -1,6 +1,6 @@
 import { genUploadUrl } from "@vercel/blob";
 
-export async function POST() {
+export async function GET() {
   try {
     // Create a one-time upload URL
     const { url } = await genUploadUrl({
