@@ -29,7 +29,7 @@ export default function AdUploadPage() {
 
    // Handle image upload
    const handleImageUpload = async (e) => {
-      // const file = e.target.files[0];
+      const file = e.target.files[0];
       if (!file) return;
 
       const MAX_SIZE_MB = 2;
@@ -343,7 +343,7 @@ export default function AdUploadPage() {
                <input
                   type="file"
                   accept="image/*"
-                  onChange={(e) => handleImageUpload(e.target.files[0])}
+                  onChange={handleImageUpload}
                   className="border w-full px-3 py-2 rounded"
                />
                {uploading && (
