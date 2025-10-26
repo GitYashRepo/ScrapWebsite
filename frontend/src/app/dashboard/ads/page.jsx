@@ -29,7 +29,7 @@ export default function AdUploadPage() {
 
    // Handle image upload
    const handleImageUpload = async (e) => {
-      const file = e.target.files[0];
+      // const file = e.target.files[0];
       if (!file) return;
 
       const MAX_SIZE_MB = 2;
@@ -349,13 +349,13 @@ export default function AdUploadPage() {
                {uploading && (
                   <p className="text-sm text-gray-500 mt-1">Uploading...</p>
                )}
-               {form.productImages[0] && (
+               {/* {form.productImages[0] && (
                   <img
                      src={form.productImages[0]}
                      alt="Preview"
                      className="mt-3 w-32 h-32 object-cover rounded border"
                   />
-               )}
+               )} */}
             </div>
 
             {/* Duration */}
