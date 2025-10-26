@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getSession } from "next-auth/react";
 import { toast } from "sonner"
-import { upload } from "@vercel/blob/client";
 
 
 export default function AddAuctionProduct() {
@@ -99,28 +98,30 @@ export default function AddAuctionProduct() {
 
       try {
          setUploading(true);
-
          const formData = new FormData();
-         formData.append('file', file);
+         formData.append("file", file);
 
-         const res = await fetch('/api/blob-upload', {
-            method: 'POST',
+         const res = await fetch("/api/upload", {
+            method: "POST",
             body: formData,
          });
 
          const data = await res.json();
 
-         if (!res.ok) throw new Error(data.error || 'Upload failed');
-
-         toast.success('Image uploaded successfully!');
-         setForm({ ...form, images: [data.url] });
+         if (res.ok) {
+            toast.success("Image uploaded successfully!");
+            setForm((prev) => ({ ...prev, images: [data.url] })); // or productImages for AdUploadPage
+         } else {
+            toast.error(data.error || "Upload failed!");
+         }
       } catch (err) {
-         console.error("Upload failed:", err);
+         console.error(err);
          toast.error("Image upload failed!");
       } finally {
          setUploading(false);
       }
    };
+
 
    return (
       <div className="max-w-lg min-h-[80vh] mx-auto p-6">
