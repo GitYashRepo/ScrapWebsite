@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getSession } from "next-auth/react";
 import { toast } from "sonner"
+import { upload } from "@vercel/blob/client";
 
 
 export default function AddAuctionProduct() {
@@ -21,6 +22,7 @@ export default function AddAuctionProduct() {
       auctionEnd: "",
    });
    const [loading, setLoading] = useState(false);
+   const [uploading, setUploading] = useState(false);
 
    useEffect(() => {
       fetch("/api/category")
@@ -68,8 +70,6 @@ export default function AddAuctionProduct() {
          auctionEnd: endDate.toISOString(),
       };
 
-      console.log("Sending to backend:", productData);
-
       const res = await fetch("/api/product", {
          method: "POST",
          headers: { "Content-Type": "application/json" },
@@ -84,6 +84,30 @@ export default function AddAuctionProduct() {
          router.push("/dashboard/seller");
       } else {
          toast.error(data.error || "Something went wrong!");
+      }
+   };
+
+   const handleImageUpload = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const MAX_SIZE_MB = 2;
+      if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+         toast.error(`File too large (max ${MAX_SIZE_MB} MB)`);
+         return;
+      }
+
+      setUploading(true);
+      try {
+         // Directly upload to Vercel Blob
+         const blob = await upload(file.name, file, { access: "public" });
+         toast.success("Image uploaded successfully!");
+         setForm({ ...form, images: [blob.url] });
+      } catch (err) {
+         console.error("Upload failed:", err);
+         toast.error("Image upload failed!");
+      } finally {
+         setUploading(false);
       }
    };
 
@@ -195,34 +219,9 @@ export default function AddAuctionProduct() {
                   type="file"
                   accept="image/*"
                   className="border w-full px-3 py-2 rounded"
-                  onChange={async (e) => {
-                     const file = e.target.files[0];
-                     if (!file) return;
-
-                     // Size validation on frontend (for better UX)
-                     const MAX_SIZE_MB = 2;
-                     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-                        toast.error(`File too large (max ${MAX_SIZE_MB} MB)`);
-                        return;
-                     }
-
-                     const formData = new FormData();
-                     formData.append("file", file);
-
-                     const res = await fetch("/api/upload", {
-                        method: "POST",
-                        body: formData,
-                     });
-
-                     const data = await res.json();
-                     if (res.ok) {
-                        toast.success("Image uploaded successfully!");
-                        setForm({ ...form, images: [data.url] });
-                     } else {
-                        toast.error(data.error || "Image upload failed!");
-                     }
-                  }}
+                  onChange={handleImageUpload}
                />
+               {uploading && <p className="text-sm text-gray-500 mt-1">Uploading...</p>}
                {form.images[0] && (
                   <img
                      src={form.images[0]}

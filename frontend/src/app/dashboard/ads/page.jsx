@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Script from "next/script";
 import { toast } from "sonner";
+import { upload } from "@vercel/blob/client";
 
 export default function AdUploadPage() {
    const { data: session } = useSession();
@@ -37,25 +38,48 @@ export default function AdUploadPage() {
          return;
       }
 
-      const formData = new FormData();
-      formData.append("file", file);
+      try {
+         setUploading(true);
 
-      setUploading(true);
-      const res = await fetch("/api/upload", {
-         method: "POST",
-         body: formData,
-      });
+         // Step 1: Ask your API for a one-time upload URL
+         const res = await fetch("/api/blob-upload", { method: "POST" });
+         const { url } = await res.json();
 
+         if (!url) throw new Error("Failed to get upload URL");
 
-      const data = await res.json();
-      setUploading(false);
+         // Step 2: Upload the file directly to Vercel Blob via client SDK
+         const blob = await upload(url, file, {
+            access: "public",
+         });
 
-      if (res.ok) {
          toast.success("Image uploaded successfully!");
-         setForm({ ...form, productImages: [data.url] });
-      } else {
-         toast.error(data.error || "Image upload failed!");
+         setForm({ ...form, productImages: [blob.url] });
+      } catch (error) {
+         console.error("Upload failed:", error);
+         toast.error(error.message || "Upload failed");
+      } finally {
+         setUploading(false);
       }
+
+      // const formData = new FormData();
+      // formData.append("file", file);
+
+      // setUploading(true);
+      // const res = await fetch("/api/upload", {
+      //    method: "POST",
+      //    body: formData,
+      // });
+
+
+      // const data = await res.json();
+      // setUploading(false);
+
+      // if (res.ok) {
+      //    toast.success("Image uploaded successfully!");
+      //    setForm({ ...form, productImages: [data.url] });
+      // } else {
+      //    toast.error(data.error || "Image upload failed!");
+      // }
    };
 
    const handleSubmit = async (e) => {
