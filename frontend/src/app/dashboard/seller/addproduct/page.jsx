@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getSession } from "next-auth/react";
 import { toast } from "sonner"
-import { upload } from "@vercel/blob/client";
 
 
 export default function AddProduct() {
@@ -16,7 +15,7 @@ export default function AddProduct() {
       pricePerKg: "",
       quantity: "",
       category: "",
-      images: [""],
+      images: [],
    });
    const [loading, setLoading] = useState(false);
    const [uploading, setUploading] = useState(false);
@@ -39,7 +38,20 @@ export default function AddProduct() {
          return;
       }
 
+      if (uploading) {
+         toast.info("Please wait for the image upload to finish before submitting.");
+         setLoading(false);
+         return;
+      }
+
+      if (!form.images.length) {
+         toast.info("Please upload at least one image.");
+         setLoading(false);
+         return;
+      }
+
       const productData = { ...form, seller: session.user.id };
+      console.log("Submitting product data:", productData);
 
       const res = await fetch("/api/product", {
          method: "POST",
@@ -70,28 +82,30 @@ export default function AddProduct() {
 
       try {
          setUploading(true);
-
          const formData = new FormData();
-         formData.append('file', file);
+         formData.append("file", file);
 
-         const res = await fetch('/api/blob-upload', {
-            method: 'POST',
+         const res = await fetch("/api/upload", {
+            method: "POST",
             body: formData,
          });
 
          const data = await res.json();
 
-         if (!res.ok) throw new Error(data.error || 'Upload failed');
-
-         toast.success('Image uploaded successfully!');
-         setForm({ ...form, images: [data.url] });
+         if (res.ok) {
+            toast.success("Image uploaded successfully!");
+            setForm((prev) => ({ ...prev, images: [data.url] })); // or productImages for AdUploadPage
+         } else {
+            toast.error(data.error || "Upload failed!");
+         }
       } catch (err) {
          console.error(err);
          toast.error("Image upload failed!");
       } finally {
-         setUploading(false);
+         setUploading(false); // ✅ make sure to reset uploading
       }
    };
+
 
    return (
       <div className="max-w-lg min-h-[80vh] mx-auto p-6">

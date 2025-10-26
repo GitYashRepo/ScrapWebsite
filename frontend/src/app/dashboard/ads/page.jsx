@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Script from "next/script";
 import { toast } from "sonner";
-import { upload } from "@vercel/blob/client";
+
 
 export default function AdUploadPage() {
    const { data: session } = useSession();
@@ -40,48 +40,30 @@ export default function AdUploadPage() {
 
       try {
          setUploading(true);
-
          const formData = new FormData();
-         formData.append('file', file);
+         formData.append("file", file);
 
-         const res = await fetch('/api/blob-upload', {
-            method: 'POST',
+         const res = await fetch("/api/upload", {
+            method: "POST",
             body: formData,
          });
 
          const data = await res.json();
 
-         if (!res.ok) throw new Error(data.error || 'Upload failed');
-
-         toast.success('Image uploaded successfully!');
-         setForm({ ...form, images: [data.url] });
-      } catch (error) {
-         console.error("Upload failed:", error);
-         toast.error(error.message || "Upload failed");
+         if (res.ok) {
+            toast.success("Image uploaded successfully!");
+            setForm((prev) => ({ ...prev, productImages: [data.url] })); // or productImages for AdUploadPage
+         } else {
+            toast.error(data.error || "Upload failed!");
+         }
+      } catch (err) {
+         console.error(err);
+         toast.error("Image upload failed!");
       } finally {
          setUploading(false);
       }
-
-      // const formData = new FormData();
-      // formData.append("file", file);
-
-      // setUploading(true);
-      // const res = await fetch("/api/upload", {
-      //    method: "POST",
-      //    body: formData,
-      // });
-
-
-      // const data = await res.json();
-      // setUploading(false);
-
-      // if (res.ok) {
-      //    toast.success("Image uploaded successfully!");
-      //    setForm({ ...form, productImages: [data.url] });
-      // } else {
-      //    toast.error(data.error || "Image upload failed!");
-      // }
    };
+
 
    const handleSubmit = async (e) => {
       e.preventDefault();
