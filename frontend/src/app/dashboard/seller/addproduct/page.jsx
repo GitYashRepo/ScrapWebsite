@@ -59,7 +59,7 @@ export default function AddProduct() {
    };
 
    const handleImageUpload = async (e) => {
-      // const file = e.target.files[0];
+      const file = e.target.files[0];
       if (!file) return;
 
       const MAX_SIZE_MB = 2;
@@ -171,7 +171,7 @@ export default function AddProduct() {
                   type="file"
                   accept="image/*"
                   className="border w-full px-3 py-2 rounded"
-                  onChange={(e) => handleImageUpload(e.target.files[0])}
+                  onChange={handleImageUpload}
                />
                {uploading && <p className="text-sm text-gray-500 mt-1">Uploading...</p>}
                {/* {form.images[0] && (
