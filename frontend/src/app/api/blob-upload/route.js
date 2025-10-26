@@ -1,16 +1,26 @@
-import { createUploadUrl } from "@vercel/blob";
+// src/app/api/blob-upload/route.js
+import { upload } from '@vercel/blob';
 
-export async function GET() {
+export async function POST(req) {
   try {
-    // Create a one-time upload URL
-    const { url } = await createUploadUrl({
-      access: "public",
-      token: process.env.BLOB_READ_WRITE_TOKEN, // explicitly required in v2
+    const data = await req.formData();
+    const file = data.get('file');
+
+    if (!file) {
+      return new Response(JSON.stringify({ error: 'No file provided' }), { status: 400 });
+    }
+
+    const arrayBuffer = await file.arrayBuffer();
+
+    const blob = await upload(arrayBuffer, {
+      access: 'public',
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+      name: file.name, 
     });
 
-    return new Response(JSON.stringify({ url }), { status: 200 });
+    return new Response(JSON.stringify({ url: blob.url }), { status: 200 });
   } catch (error) {
-    console.error("Error creating upload URL:", error);
+    console.error("Error uploading file:", error);
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
 }
