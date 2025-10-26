@@ -1,4 +1,5 @@
 import { put } from "@vercel/blob";
+import { NextResponse } from "next/server";
 
 export async function POST(req) {
   try {
@@ -20,17 +21,19 @@ export async function POST(req) {
       return new Response(JSON.stringify({ error: "File too large (max 2 MB)" }), { status: 400 });
     }
 
-    // Generate a unique file name
-    const timestamp = Date.now();
-    const uniqueName = `${timestamp}-${file.name}`;
+    // Convert file to Buffer for upload
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const uniqueName = `${Date.now()}-${file.name}`;
 
-    // Upload to Vercel Blob Storage
-    const blob = await put(uniqueName, file, {
-      access: "public", // Makes it publicly accessible
+    // Now call the new `put()` with token explicitly passed
+    const blob = await put(uniqueName, buffer, {
+      access: "public",
+      token: process.env.BLOB_READ_WRITE_TOKEN, // ✅ must be provided explicitly in v2
+      contentType: file.type,
     });
 
-    // blob.url will be the full public URL of the image
-    return new Response(JSON.stringify({ url: blob.url }), { status: 200 });
+    return NextResponse.json({ url: blob.url }, { status: 200 });
   } catch (error) {
     console.error("Upload error:", error);
     return new Response(JSON.stringify({ error: "Upload failed" }), { status: 500 });
