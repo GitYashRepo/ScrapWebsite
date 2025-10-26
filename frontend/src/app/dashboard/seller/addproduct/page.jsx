@@ -71,14 +71,12 @@ export default function AddProduct() {
       try {
          setUploading(true);
 
-         // Generate unique filename
-         const timestamp = Date.now();
-         const uniqueName = `${timestamp}-${file.name}`;
+         // 1️⃣ Get one-time handle URL from server
+         const res = await fetch("/api/blob-upload");
+         const { url: handleUploadUrl } = await res.json();
 
-         // Direct client upload to Vercel Blob
-         const blob = await upload(uniqueName, file, {
-            access: "public", // public URL
-         });
+         // 2️⃣ Upload directly
+         const blob = await upload(file, { handleUploadUrl });
 
          toast.success("Image uploaded successfully!");
          setForm({ ...form, images: [blob.url] });
@@ -173,7 +171,7 @@ export default function AddProduct() {
                   type="file"
                   accept="image/*"
                   className="border w-full px-3 py-2 rounded"
-                  onChange={handleImageUpload}
+                  onChange={(e) => handleImageUpload(e.target.files[0])}
                />
                {uploading && <p className="text-sm text-gray-500 mt-1">Uploading...</p>}
                {form.images[0] && (
