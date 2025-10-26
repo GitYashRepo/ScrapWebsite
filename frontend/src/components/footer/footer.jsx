@@ -13,7 +13,7 @@ export default function Footer() {
             <div>
                <h2 className="text-xl font-semibold text-foreground mb-3">Kabaad Mandi</h2>
                <p className="text-sm leading-relaxed text-justify">
-                  At Kabaad Mandi, we are revolutionizing the way scrap materials are bought and sold. Our platform connects sellers and buyers across industries, creating a transparent, efficient, and secure marketplace for scrap trading. Whether you’re looking to buy, sell, or auction industrial scrap, we make it simple with secure payments and real-time bidding.
+                  At Kabaad Mandi, we are revolutionizing the way scrap materials are bought and sold. Our platform connects sellers and buyers across industries, creating a transparent, efficient, and secure marketplace for scrap trading. Whether you’re looking to buy, sell, or auction industrial scrap, we make it simple with real-time bidding.
                </p>
 
                <div className="mt-4 space-y-2 text-sm">

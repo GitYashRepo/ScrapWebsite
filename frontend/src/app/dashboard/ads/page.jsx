@@ -10,7 +10,6 @@ export default function AdUploadPage() {
    const [loading, setLoading] = useState(false);
    const [uploading, setUploading] = useState(false);
    const [lastCreatedAd, setLastCreatedAd] = useState(null);
-
    const [form, setForm] = useState({
       companyName: "",
       companyEmail: "",
@@ -25,7 +24,7 @@ export default function AdUploadPage() {
       durationHours: 1,
    });
 
-   const COST_PER_HOUR = 50; // ₹50 per hour
+   const COST_PER_HOUR = 50;
 
    // Handle image upload
    const handleImageUpload = async (e) => {
@@ -46,6 +45,7 @@ export default function AdUploadPage() {
          method: "POST",
          body: formData,
       });
+
 
       const data = await res.json();
       setUploading(false);
@@ -77,8 +77,8 @@ export default function AdUploadPage() {
 
          const now = new Date();
          const adStart = now;
-         const adEnd = new Date(now.getTime() + form.durationHours * 60 * 60 * 1000); // duration in ms
-         const totalAmount = form.durationHours * 50; // ₹50 per hour
+         const adEnd = new Date(now.getTime() + form.durationHours * 60 * 60 * 1000);
+         const totalAmount = form.durationHours * 50;
 
          const payload = {
             ...form,
@@ -86,7 +86,7 @@ export default function AdUploadPage() {
             adStart,
             adEnd,
             totalAmount,
-            status: "running", // start immediately
+            status: "running",
          };
 
          const res = await fetch("/api/ads", {
@@ -165,7 +165,6 @@ export default function AdUploadPage() {
       }
    };
 
-
    useEffect(() => {
       const savedAd = localStorage.getItem("lastCreatedAd");
       if (savedAd) {
@@ -176,7 +175,6 @@ export default function AdUploadPage() {
    useEffect(() => {
       if (lastCreatedAd) localStorage.setItem("lastCreatedAd", JSON.stringify(lastCreatedAd));
    }, [lastCreatedAd]);
-
 
    return (
       <div className="max-w-2xl mx-auto p-6 min-h-[90vh]">

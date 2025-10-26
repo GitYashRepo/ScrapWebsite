@@ -1,5 +1,4 @@
-import { writeFile } from "fs/promises";
-import path from "path";
+import { put } from "@vercel/blob";
 
 export async function POST(req) {
   try {
@@ -21,18 +20,17 @@ export async function POST(req) {
       return new Response(JSON.stringify({ error: "File too large (max 2 MB)" }), { status: 400 });
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    // Create unique filename (avoid overwriting)
+    // Generate a unique file name
     const timestamp = Date.now();
-    const fileName = `${timestamp}-${file.name}`;
-    const filePath = path.join(process.cwd(), "public/uploads", fileName);
+    const uniqueName = `${timestamp}-${file.name}`;
 
-    await writeFile(filePath, buffer);
+    // Upload to Vercel Blob Storage
+    const blob = await put(uniqueName, file, {
+      access: "public", // Makes it publicly accessible
+    });
 
-    const url = `/uploads/${fileName}`;
-    return new Response(JSON.stringify({ url }), { status: 200 });
+    // blob.url will be the full public URL of the image
+    return new Response(JSON.stringify({ url: blob.url }), { status: 200 });
   } catch (error) {
     console.error("Upload error:", error);
     return new Response(JSON.stringify({ error: "Upload failed" }), { status: 500 });
