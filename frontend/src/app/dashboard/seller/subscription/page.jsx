@@ -12,14 +12,26 @@ export default function SellerSubscriptionPage() {
    const [activeSub, setActiveSub] = useState(null);
    const [checking, setChecking] = useState(true);
    const [sellerInfo, setSellerInfo] = useState(null);
-   const [coupon, setCoupon] = useState("");
 
-   const plans = [
+   // ✅ Coupon logic
+   const [couponInput, setCouponInput] = useState("");
+   const [appliedCoupon, setAppliedCoupon] = useState(null);
+   const [discountedPlans, setDiscountedPlans] = useState([]);
+
+
+   const basePlans = [
       { id: "seller_monthly", label: "1 Month", price: 2000 },
       { id: "seller_quarterly", label: "3 Months", price: 5000 },
       { id: "seller_halfyear", label: "6 Months", price: 7500 },
       { id: "seller_yearly", label: "1 Year", price: 10000 },
    ];
+
+
+   // Keep original plan list updated (discount applied or not)
+   useEffect(() => {
+      setDiscountedPlans(basePlans);
+   }, []);
+
 
    // ✅ Fetch seller details
    useEffect(() => {
@@ -61,16 +73,80 @@ export default function SellerSubscriptionPage() {
       checkSubscription();
    }, [session]);
 
+   // ✅ Apply Coupon Code
+   const handleApplyCoupon = async () => {
+      if (!couponInput.trim()) {
+         toast.error("Please enter a coupon code!");
+         return;
+      }
+
+      setLoading(true);
+      try {
+         const res = await fetch(`/api/admin/coupons/validate?code=${couponInput.trim()}`);
+         const data = await res.json();
+
+         if (!res.ok) throw new Error(data.error || "Invalid coupon code");
+
+         if (data.coupon.type === "seller_free_3months") {
+            setAppliedCoupon(data.coupon);
+            toast.success("🎁 Free 3-Month Coupon Applied! Click Activate button below.");
+         } else if (data.coupon.type === "seller_discount") {
+            setAppliedCoupon(data.coupon);
+
+            const newPlans = basePlans.map((p) => ({
+               ...p,
+               price: Math.round(p.price * (1 - data.coupon.discountPercentage / 100)),
+            }));
+
+            setDiscountedPlans(newPlans);
+            toast.success(`💸 ${data.coupon.discountPercentage}% discount applied!`);
+         }
+      } catch (err) {
+         toast.error(err.message);
+      } finally {
+         setLoading(false);
+      }
+   };
+
+   // ✅ Subscription logic
    const handleSubscribe = async (planId) => {
       if (!session?.user?.id) {
          toast.info("Please log in first.");
          return;
       }
 
-      setLoading(true);
+      // 3-Month Free Coupon → Skip Razorpay
+      if (appliedCoupon?.type === "seller_free_3months") {
+         setLoading(true);
+         try {
+            const res = await fetch("/api/subscription/free", {
+               method: "POST",
+               headers: { "Content-Type": "application/json" },
+               body: JSON.stringify({
+                  userId: session.user.id,
+                  userType: "Seller",
+                  planName: "seller_quarterly",
+                  couponCode: appliedCoupon.code,
+               }),
+            });
+            const data = await res.json();
 
+            if (!res.ok) throw new Error(data.error || "Failed to activate free subscription");
+
+            toast.success("🎉 Free 3-Month Subscription Activated!");
+            await signIn(undefined, { redirect: false });
+            window.location.href = "/dashboard/seller";
+         } catch (error) {
+            toast.error(error.message);
+         } finally {
+            setLoading(false);
+         }
+         return;
+      }
+
+      // Normal / Discounted payment flow
+      setLoading(true);
       try {
-         // 1️⃣ Call backend API with optional coupon
          const res = await fetch("/api/subscription", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -78,29 +154,25 @@ export default function SellerSubscriptionPage() {
                userId: session.user.id,
                userType: "Seller",
                planName: planId,
-               couponCode: coupon.trim() || null,
+               couponCode: appliedCoupon?.code || null,
             }),
          });
 
          const data = await res.json();
 
          if (!res.ok) {
-            if (data.active && data.subscription) {
-               setActiveSub(data.subscription);
-            }
             toast.error(data.error || "Subscription failed.");
             return;
          }
 
-         // ✅ If FREE coupon applied — skip Razorpay
-         if (!data.order && data.subscription && data.subscription.status === "active") {
-            toast.success("🎉 Free 3-Month Subscription Activated via Coupon!");
+         if (!data.order && data.subscription?.status === "active") {
+            toast.success("🎉 Free Subscription Activated via Coupon!");
             await signIn(undefined, { redirect: false });
             window.location.href = "/dashboard/seller";
             return;
          }
 
-         // ✅ If paid — launch Razorpay
+         // ✅ Paid Subscription via Razorpay
          const options = {
             key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
             amount: data.order.amount,
@@ -114,7 +186,6 @@ export default function SellerSubscriptionPage() {
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify(response),
                });
-
                const verifyData = await verifyRes.json();
                if (verifyRes.ok) {
                   toast.success("✅ Subscription Activated Successfully!");
@@ -141,6 +212,7 @@ export default function SellerSubscriptionPage() {
          setLoading(false);
       }
    };
+
 
    if (checking) {
       return <div className="p-10 text-center text-gray-600">Checking subscription...</div>;
@@ -182,20 +254,9 @@ export default function SellerSubscriptionPage() {
          <Script src="https://checkout.razorpay.com/v1/checkout.js" />
          <h1 className="text-3xl font-bold mb-6 text-center">Choose Your Seller Subscription Plan</h1>
 
-         {/* Coupon Input */}
-         <div className="max-w-md mx-auto mb-8">
-            <input
-               type="text"
-               placeholder="Enter Coupon Code (optional)"
-               value={coupon}
-               onChange={(e) => setCoupon(e.target.value)}
-               className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-         </div>
-
-         {/* Plans */}
+         {/* Subscription Cards */}
          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-8">
-            {plans.map((plan) => (
+            {discountedPlans.map((plan) => (
                <div
                   key={plan.id}
                   className="border border-gray-300 rounded-2xl shadow-lg p-6 flex flex-col items-center bg-white hover:shadow-2xl transition-all"
@@ -204,7 +265,12 @@ export default function SellerSubscriptionPage() {
                   <p className="text-gray-600 mb-4 text-center">
                      Access to all seller features for {plan.label.toLowerCase()}.
                   </p>
-                  <p className="text-3xl font-bold mb-4">₹{plan.price}</p>
+                  <p className="text-3xl font-bold mb-4">
+                     ₹{plan.price.toLocaleString()}
+                     {appliedCoupon?.type === "seller_discount" && (
+                        <span className="text-sm text-green-600 block">Discount Applied</span>
+                     )}
+                  </p>
                   <button
                      onClick={() => handleSubscribe(plan.id)}
                      disabled={loading}
@@ -217,6 +283,37 @@ export default function SellerSubscriptionPage() {
                   </button>
                </div>
             ))}
+         </div>
+
+         {/* OR APPLY COUPON CODE */}
+         <div className="max-w-md mx-auto mt-10 text-center">
+            <h2 className="text-xl font-bold mb-3 text-gray-800">OR APPLY COUPON CODE</h2>
+            <div className="flex gap-2">
+               <input
+                  type="text"
+                  placeholder="Enter coupon code"
+                  value={couponInput}
+                  onChange={(e) => setCouponInput(e.target.value)}
+                  className="flex-grow border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500"
+               />
+               <button
+                  onClick={handleApplyCoupon}
+                  disabled={loading}
+                  className={`px-4 py-2 rounded-lg text-white ${loading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
+                     }`}
+               >
+                  Apply
+               </button>
+            </div>
+
+            {appliedCoupon?.type === "seller_free_3months" && (
+               <button
+                  onClick={() => handleSubscribe("seller_quarterly")}
+                  className="mt-4 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg"
+               >
+                  🎉 Activate Free 3-Month Subscription
+               </button>
+            )}
          </div>
       </div>
    );
