@@ -168,6 +168,7 @@ export function Navbar() {
                { label: "Dashboard", href: `/dashboard/admin` },
                { label: "Manage Categories", href: `/dashboard/admin/categories` },
                { label: "Stats", href: `/dashboard/admin/stats` },
+               { label: "Suspend / Undo", href: `/dashboard/admin/user-search` },
             ],
          };
 

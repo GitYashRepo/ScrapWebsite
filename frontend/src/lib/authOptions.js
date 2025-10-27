@@ -23,13 +23,30 @@ export const authOptions = {
         }
 
         const buyer = await Buyer.findOne({ email });
-        if (buyer && (await comparePassword(password, buyer.password))) {
-          return { id: buyer._id, name: buyer.name, email, role: "buyer" };
+        if (buyer) {
+          if (buyer.isSuspended) {
+            // 🚫 Block suspended buyer
+            throw new Error("Your account has been suspended by admin.");
+          }
+          if (await comparePassword(password, buyer.password)) {
+            return { id: buyer._id, name: buyer.name, email, role: "buyer" };
+          }
         }
 
         const seller = await Seller.findOne({ email });
-        if (seller && (await comparePassword(password, seller.password))) {
-          return { id: seller._id, name: seller.ownerName, email, role: "seller" };
+        if (seller) {
+          if (seller.isSuspended) {
+            // 🚫 Block suspended seller
+            throw new Error("Your account has been suspended by admin.");
+          }
+          if (await comparePassword(password, seller.password)) {
+            return {
+              id: seller._id,
+              name: seller.ownerName,
+              email,
+              role: "seller",
+            };
+          }
         }
 
         throw new Error("Invalid email or password");

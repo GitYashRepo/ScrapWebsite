@@ -12,6 +12,7 @@ const SellerSchema = new mongoose.Schema({
   pinCode: {type: Number, required: true},
   phone: {type: Number, required: true},
   pushSubscription: { type: Object, default: null },
+  isSuspended: { type: Boolean, default: false },
 }, { timestamps: true });
 
 export default mongoose.models.Seller || mongoose.model("Seller", SellerSchema);
