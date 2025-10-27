@@ -8,6 +8,7 @@ import { Providers } from "@/components/Providers/Providers";
 import { Toaster } from "@/components/ui/sonner"
 import AdDisplayModal from "@/components/ad/AdDisplayModal";
 import AdTicker from "@/components/ad/AdTicker";
+import { Analytics } from "@vercel/analytics/next"
 
 
 const geistSans = Geist({
@@ -46,6 +47,7 @@ export default function RootLayout({ children }) {
                  className: "toast px-6 py-4",
                }}
             />
+            <Analytics />
          </Providers>
       </body>
     </html>
