@@ -4,8 +4,7 @@ import { useState, useEffect } from "react";
 import Script from "next/script";
 import { signIn } from "next-auth/react";
 import { useSession } from "next-auth/react";
-import { toast } from "sonner"
-
+import { toast } from "sonner";
 
 export default function SellerSubscriptionPage() {
    const { data: session } = useSession();
@@ -14,7 +13,6 @@ export default function SellerSubscriptionPage() {
    const [checking, setChecking] = useState(true);
    const [sellerInfo, setSellerInfo] = useState(null);
    const [coupon, setCoupon] = useState("");
-
 
    const plans = [
       { id: "seller_monthly", label: "1 Month", price: 2000 },
@@ -26,7 +24,6 @@ export default function SellerSubscriptionPage() {
    // ✅ Fetch seller details
    useEffect(() => {
       if (!session?.user?.id) return;
-
       const fetchSellerInfo = async () => {
          try {
             const res = await fetch(`/api/seller/${session.user.id}`);
@@ -37,14 +34,12 @@ export default function SellerSubscriptionPage() {
             console.error("Error fetching seller info:", err);
          }
       };
-
       fetchSellerInfo();
    }, [session]);
 
-
+   // ✅ Check active subscription
    useEffect(() => {
       if (!session?.user?.id) return;
-
       const checkSubscription = async () => {
          try {
             const res = await fetch("/api/subscription/check", {
@@ -63,7 +58,6 @@ export default function SellerSubscriptionPage() {
             setChecking(false);
          }
       };
-
       checkSubscription();
    }, [session]);
 
@@ -76,7 +70,7 @@ export default function SellerSubscriptionPage() {
       setLoading(true);
 
       try {
-         // 1️⃣ Create order from backend with coupon
+         // 1️⃣ Call backend API with optional coupon
          const res = await fetch("/api/subscription", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -89,6 +83,7 @@ export default function SellerSubscriptionPage() {
          });
 
          const data = await res.json();
+
          if (!res.ok) {
             if (data.active && data.subscription) {
                setActiveSub(data.subscription);
@@ -97,15 +92,15 @@ export default function SellerSubscriptionPage() {
             return;
          }
 
-         // ✅ If coupon gives full free plan
+         // ✅ If FREE coupon applied — skip Razorpay
          if (!data.order && data.subscription && data.subscription.status === "active") {
-            toast.success("🎉 Free Subscription Activated via Coupon!");
+            toast.success("🎉 Free 3-Month Subscription Activated via Coupon!");
             await signIn(undefined, { redirect: false });
             window.location.href = "/dashboard/seller";
             return;
          }
 
-         // 2️⃣ Initialize Razorpay checkout (for paid ones)
+         // ✅ If paid — launch Razorpay
          const options = {
             key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
             amount: data.order.amount,
@@ -114,7 +109,6 @@ export default function SellerSubscriptionPage() {
             description: `Subscription Plan - ${planId}`,
             order_id: data.order.id,
             handler: async (response) => {
-               // 3️⃣ Verify payment on backend
                const verifyRes = await fetch("/api/subscription/verify", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
@@ -124,7 +118,6 @@ export default function SellerSubscriptionPage() {
                const verifyData = await verifyRes.json();
                if (verifyRes.ok) {
                   toast.success("✅ Subscription Activated Successfully!");
-                  // 🔄 Refresh NextAuth session
                   await signIn(undefined, { redirect: false });
                   window.location.href = "/dashboard/seller";
                } else {
@@ -149,12 +142,14 @@ export default function SellerSubscriptionPage() {
       }
    };
 
-   if (checking) return <div className="p-10 text-center text-gray-600">Checking subscription...</div>;
+   if (checking) {
+      return <div className="p-10 text-center text-gray-600">Checking subscription...</div>;
+   }
 
+   // ✅ Active Subscription UI
    if (activeSub) {
       return (
          <div className="flex flex-col p-10 items-center">
-            {/* ✅ Seller Info Section */}
             {sellerInfo && (
                <div className="mb-8 border border-gray-300 rounded-2xl shadow-lg p-6 bg-white max-w-md mx-auto text-left">
                   <h2 className="text-2xl font-bold mb-3 text-blue-700">Seller Details</h2>
@@ -166,39 +161,28 @@ export default function SellerSubscriptionPage() {
                   <p><strong>Address:</strong> {sellerInfo.address}, {sellerInfo.city}, {sellerInfo.state} - {sellerInfo.pinCode}</p>
                </div>
             )}
-            {/* ✅ Active Subscription */}
+
             <div className="border border-gray-300 rounded-2xl shadow-lg p-6 bg-white max-w-md mx-auto">
-               <h1 className="text-3xl font-bold mb-6 text-blue-700">
-                  Your Active Subscription
-               </h1>
+               <h1 className="text-3xl font-bold mb-6 text-blue-700">Your Active Subscription</h1>
                <p className="text-lg font-semibold">
                   Plan: {activeSub.planName.replace("seller_", "").toUpperCase()}
                </p>
-               <p>
-                  Status:{" "}
-                  <span className="text-green-600 font-bold">
-                     {activeSub.status}
-                  </span>
-               </p>
+               <p>Status: <span className="text-green-600 font-bold">{activeSub.status}</span></p>
                <p>Start: {new Date(activeSub.startDate).toLocaleDateString()}</p>
                <p>End: {new Date(activeSub.endDate).toLocaleDateString()}</p>
-               <p className="mt-4 text-gray-500 text-sm">
-                  You can renew after this subscription ends.
-               </p>
+               <p className="mt-4 text-gray-500 text-sm">You can renew after this subscription ends.</p>
             </div>
          </div>
       );
    }
 
+   // ✅ Subscription Plans UI
    return (
       <div className="p-10 max-w-[90vw] min-h-[80vh] mx-auto">
          <Script src="https://checkout.razorpay.com/v1/checkout.js" />
-         <h1 className="text-3xl font-bold mb-6 text-center">
-            Choose Your Seller Subscription Plan
-         </h1>
+         <h1 className="text-3xl font-bold mb-6 text-center">Choose Your Seller Subscription Plan</h1>
 
-
-         {/* ✅ Coupon input section */}
+         {/* Coupon Input */}
          <div className="max-w-md mx-auto mb-8">
             <input
                type="text"
@@ -209,15 +193,14 @@ export default function SellerSubscriptionPage() {
             />
          </div>
 
+         {/* Plans */}
          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-8">
             {plans.map((plan) => (
                <div
                   key={plan.id}
                   className="border border-gray-300 rounded-2xl shadow-lg p-6 flex flex-col items-center bg-white hover:shadow-2xl transition-all"
                >
-                  <h2 className="text-2xl font-semibold mb-2 text-blue-700">
-                     {plan.label}
-                  </h2>
+                  <h2 className="text-2xl font-semibold mb-2 text-blue-700">{plan.label}</h2>
                   <p className="text-gray-600 mb-4 text-center">
                      Access to all seller features for {plan.label.toLowerCase()}.
                   </p>
