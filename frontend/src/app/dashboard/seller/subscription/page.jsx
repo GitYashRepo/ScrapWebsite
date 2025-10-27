@@ -184,7 +184,10 @@ export default function SellerSubscriptionPage() {
                const verifyRes = await fetch("/api/subscription/verify", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(response),
+                  body: JSON.stringify({
+                     ...response,
+                     couponCode: appliedCoupon?.code || null, // ✅ include this
+                  }),
                });
                const verifyData = await verifyRes.json();
                if (verifyRes.ok) {

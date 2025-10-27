@@ -7,7 +7,7 @@ export async function POST(req) {
   await connectDB();
   try {
     const body = await req.json();
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, couponCode } = body;
 
     const sign = crypto
       .createHmac("sha256", process.env.NEXT_PUBLIC_RAZORPAY_KEY_SECRET)
@@ -42,6 +42,7 @@ export async function POST(req) {
     subscription.paymentId = razorpay_payment_id;
     subscription.startDate = startDate;
     subscription.endDate = endDate;
+    if (couponCode) subscription.couponCode = couponCode;
     await subscription.save();
 
     return NextResponse.json({ message: "Payment verified", subscription });
