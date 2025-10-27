@@ -75,7 +75,6 @@ export async function POST(req) {
 
 
     const body = await req.json();
-    console.log("Request body:", body);
 
     const {
       name,
@@ -109,8 +108,6 @@ export async function POST(req) {
       bids: [],
       highestBid: { buyer: null, amount: 0 },
     });
-
-    console.log("Saved product:", product);
 
     return new Response(JSON.stringify({ message: "Product added", product }), { status: 201 });
   } catch (error) {

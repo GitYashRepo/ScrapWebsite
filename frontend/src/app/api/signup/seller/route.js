@@ -24,7 +24,6 @@ export async function POST(req) {
 
     // ✅ Always generate a valid code, even if no sellers exist
     const sellerCode = `${year}-S-${nextNumber}`;
-    console.log("✅ Generated sellerCode:", sellerCode);
 
     const hashed = await hashPassword(password);
     const seller = await Seller.create({ storeName, ownerName, email, sellerCode, password: hashed, address, city, state, pinCode, phone });
