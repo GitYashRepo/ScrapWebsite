@@ -7,12 +7,15 @@ export async function GET() {
   await connectDB();
 
   try {
-    // Aggregate active subscriptions by userType
+    // Aggregate active subscriptions grouped by userType and whether free or paid
     const subsByType = await Subscription.aggregate([
       { $match: { status: "active" } },
       {
         $group: {
-          _id: "$userType",
+          _id: {
+            userType: "$userType",
+            isFree: { $eq: ["$amount", 0] },
+          },
           totalCount: { $sum: 1 },
           totalRevenue: { $sum: "$amount" },
         },
@@ -22,19 +25,27 @@ export async function GET() {
     let sellerSubs = 0,
       buyerSubs = 0,
       sellerRevenue = 0,
-      buyerRevenue = 0;
+      buyerRevenue = 0,
+      freeSellerSubs = 0,
+      freeBuyerSubs = 0;
 
     subsByType.forEach((entry) => {
-      if (entry._id === "Seller") {
-        sellerSubs = entry.totalCount;
-        sellerRevenue = entry.totalRevenue;
-      } else if (entry._id === "Buyer") {
-        buyerSubs = entry.totalCount;
-        buyerRevenue = entry.totalRevenue;
+      if (entry._id.userType === "Seller") {
+        if (entry._id.isFree) freeSellerSubs = entry.totalCount;
+        else {
+          sellerSubs += entry.totalCount;
+          sellerRevenue += entry.totalRevenue;
+        }
+      } else if (entry._id.userType === "Buyer") {
+        if (entry._id.isFree) freeBuyerSubs = entry.totalCount;
+        else {
+          buyerSubs += entry.totalCount;
+          buyerRevenue += entry.totalRevenue;
+        }
       }
     });
 
-    const totalSubscriptions = sellerSubs + buyerSubs;
+    const totalSubscriptions = sellerSubs + buyerSubs + freeSellerSubs + freeBuyerSubs;
     const totalRevenue = sellerRevenue + buyerRevenue;
 
     // Daily subscription revenue for chart
@@ -63,6 +74,7 @@ export async function GET() {
       {
         $match: {
           status: "active",
+          amount: { $gt: 0 },
           createdAt: { $gte: monthStart, $lt: nextMonth },
         },
       },
@@ -73,13 +85,20 @@ export async function GET() {
 
     // ✅ Return all stats
     return NextResponse.json({
+      // Subscription Counts
       sellerSubs,
       buyerSubs,
+      freeSellerSubs,
+      freeBuyerSubs,
+      totalSubscriptions,
+
+      // Revenue Stats
       sellerRevenue,
       buyerRevenue,
-      totalSubscriptions,
       totalRevenue,
       monthRevenue,
+
+      // Chart Data
       dailySubs,
     });
   } catch (err) {

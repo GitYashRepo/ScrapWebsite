@@ -30,6 +30,7 @@ const SubscriptionSchema = new mongoose.Schema(
     currency: { type: String, default: "INR" },
     paymentId: { type: String },
     orderId: { type: String },
+    couponCode: { type: String, default: null }, // ✅ added: which coupon was used
     status: {
       type: String,
       enum: ["pending", "active", "expired", "failed"],
