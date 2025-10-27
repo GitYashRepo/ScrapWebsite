@@ -15,8 +15,6 @@ export const sendEmailToSeller = async (sellerEmail, buyerName, message) => {
       params,
       process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY
     );
-
-    console.log("📧 Email sent successfully to seller!");
   } catch (error) {
     console.error("❌ Failed to send email:", error);
   }

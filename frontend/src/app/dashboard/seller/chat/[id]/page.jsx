@@ -151,37 +151,6 @@ export default function SellerChatPage() {
       };
    }, [buyer, product, sellerId]);
 
-   // --- EmailJS details
-   // const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
-   // const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
-   // const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
-
-   // --- Send email to buyer when offline
-   // const sendOfflineEmailToBuyer = async (buyerEmail, buyerName, productName, sellerName, sellerEmail) => {
-   //    if (emailSentRef.current) {
-   //       console.log("📨 Email already sent to buyer. Skipping...");
-   //       return;
-   //    }
-
-   //    try {
-   //       const customMessage = `Hello "${buyerName}", the seller "${sellerName}" has messaged you about the product "${productName}" on Kabaad Mandi. Please login to continue your conversation.\n\n- Kabaad Mandi Team`;
-
-   //       const params = {
-   //          to_email: buyerEmail,
-   //          name: sellerName,
-   //          reply_to: sellerEmail,
-   //          message: customMessage,
-   //       };
-
-   //       await emailjs.send(serviceId, templateId, params, publicKey);
-
-   //       emailSentRef.current = true;
-   //       sessionStorage.setItem("emailSentToBuyer", "true");
-   //       console.log("📧 Email notification sent to buyer!");
-   //    } catch (error) {
-   //       console.error("❌ Failed to send email notification to buyer:", error);
-   //    }
-   // };
 
    const handleSend = () => {
       if (!text.trim() || !buyer?._id || !product?._id || !sellerId) return;

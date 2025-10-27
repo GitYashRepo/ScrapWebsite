@@ -25,7 +25,6 @@ export async function POST(req) {
 
     // ✅ Always generate a valid code, even if no buyers exist
     const buyerCode = `${year}-B-${nextNumber}`;
-    console.log("✅ Generated buyerCode:", buyerCode);
 
     const hashed = await hashPassword(password);
     const buyer = await Buyer.create({ name, email, buyerCode, address, city, pinCode, phone, password: hashed });

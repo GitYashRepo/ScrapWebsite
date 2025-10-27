@@ -51,7 +51,6 @@ export default function AddProduct() {
       }
 
       const productData = { ...form, seller: session.user.id };
-      console.log("Submitting product data:", productData);
 
       const res = await fetch("/api/product", {
          method: "POST",

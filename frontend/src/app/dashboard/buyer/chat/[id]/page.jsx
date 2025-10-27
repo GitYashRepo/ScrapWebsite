@@ -163,14 +163,6 @@ export default function BuyerChatPage() {
       fetchMessages();
    }, [sessionId]);
 
-   useEffect(() => {
-      console.log("ENV TEST:", {
-         service: process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
-         template: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,
-         key: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY,
-      });
-   }, []);
-
    const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
    const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
    const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
@@ -178,7 +170,6 @@ export default function BuyerChatPage() {
    // --- Send Email via EmailJS if seller is offline
    const sendOfflineEmail = async (sellerEmail, sellerName, buyerName, buyerEmail) => {
       if (emailSentRef.current) {
-         console.log("📨 Email already sent in this session. Skipping...");
          return;
       }
       try {
@@ -199,7 +190,6 @@ export default function BuyerChatPage() {
 
          emailSentRef.current = true; // Mark email as sent
          sessionStorage.setItem("emailSent", "true");
-         console.log("📧 Email notification sent to seller!");
       } catch (error) {
          console.error("❌ Failed to send email notification:", error);
       }

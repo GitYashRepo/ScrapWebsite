@@ -26,21 +26,14 @@ const io = new Server(server, {
 const onlineUsers = new Map();
 
 io.on("connection", (socket) => {
-  console.log("⚡ Socket connected:", socket.id);
 
    // Track user identity for online detection
   const { userId, userRole } = socket.handshake.query || {};
   socket.userId = userId;
   socket.userRole = userRole;
-//   if (userId && userRole) {
-//      onlineUsers.set(userId, { socketId: socket.id, role: userRole });
-//      console.log(`🟢 ${userRole} ${userId} is now online`);
-//    }
-
   socket.on("joinRoom", (roomId) => {
     if (!roomId) return;
     socket.join(roomId);
-    console.log(`✅ Socket ${socket.id} joined room ${roomId}`);
   });
 
   socket.on("sendMessage", async (data) => {
@@ -113,7 +106,6 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     if (socket.userId) {
       onlineUsers.delete(socket.userId);
-      console.log(`🔴 ${socket.userRole} ${socket.userId} disconnected`);
     }
   });
 });
