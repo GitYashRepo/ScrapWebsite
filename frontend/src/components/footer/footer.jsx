@@ -59,7 +59,6 @@ export default function Footer() {
                <ul className="space-y-2 text-sm">
                   <li><a href="/signin" className="hover:text-foreground transition-colors">Sign in</a></li>
                   <li><a href="/signup" className="hover:text-foreground transition-colors">Create Account</a></li>
-                  <li><a href="/enquiries" className="hover:text-foreground transition-colors">Enquiry</a></li>
                </ul>
             </div>
          </div>
