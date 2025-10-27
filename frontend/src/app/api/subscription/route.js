@@ -114,7 +114,7 @@ export async function POST(req) {
       userType,
       planName,
       amount: finalAmount,
-      couponCode: couponUsed, // <— store which coupon was used
+      // couponCode: couponUsed, // <— store which coupon was used
       orderId: order ? order.id : `FREE_${Date.now()}`,
       status: finalAmount === 0 ? "active" : "pending",
       startDate: finalAmount === 0 ? startDate : null,
