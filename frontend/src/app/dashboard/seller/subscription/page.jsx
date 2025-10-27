@@ -13,6 +13,7 @@ export default function SellerSubscriptionPage() {
    const [activeSub, setActiveSub] = useState(null);
    const [checking, setChecking] = useState(true);
    const [sellerInfo, setSellerInfo] = useState(null);
+   const [coupon, setCoupon] = useState("");
 
 
    const plans = [
@@ -75,7 +76,7 @@ export default function SellerSubscriptionPage() {
       setLoading(true);
 
       try {
-         // 1️⃣ Create order from backend
+         // 1️⃣ Create order from backend with coupon
          const res = await fetch("/api/subscription", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -83,6 +84,7 @@ export default function SellerSubscriptionPage() {
                userId: session.user.id,
                userType: "Seller",
                planName: planId,
+               couponCode: coupon.trim() || null,
             }),
          });
 
@@ -95,7 +97,15 @@ export default function SellerSubscriptionPage() {
             return;
          }
 
-         // 2️⃣ Initialize Razorpay checkout
+         // ✅ If coupon gives full free plan
+         if (!data.order && data.subscription && data.subscription.status === "active") {
+            toast.success("🎉 Free Subscription Activated via Coupon!");
+            await signIn(undefined, { redirect: false });
+            window.location.href = "/dashboard/seller";
+            return;
+         }
+
+         // 2️⃣ Initialize Razorpay checkout (for paid ones)
          const options = {
             key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
             amount: data.order.amount,
@@ -186,6 +196,18 @@ export default function SellerSubscriptionPage() {
          <h1 className="text-3xl font-bold mb-6 text-center">
             Choose Your Seller Subscription Plan
          </h1>
+
+
+         {/* ✅ Coupon input section */}
+         <div className="max-w-md mx-auto mb-8">
+            <input
+               type="text"
+               placeholder="Enter Coupon Code (optional)"
+               value={coupon}
+               onChange={(e) => setCoupon(e.target.value)}
+               className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+         </div>
 
          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-8">
             {plans.map((plan) => (
