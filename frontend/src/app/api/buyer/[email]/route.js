@@ -1,7 +1,8 @@
 import connectDB from "@/lib/db/db";
 import Buyer from "@/models/buyer/buyer";
 
-export async function GET(req, { params }) {
+export async function GET(req, context) {
+   const { params } = await context;
   try {
     await connectDB();
     const { email } = await params;
