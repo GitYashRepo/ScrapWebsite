@@ -36,9 +36,6 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
 
-Your Policy Links
-Copy and add the page links within 7 days to your website for verification.
-
 Shipping
 https://merchant.razorpay.com/policy/RV2tovkpKIxIqP/shipping
 
