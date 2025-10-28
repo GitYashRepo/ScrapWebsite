@@ -8,8 +8,8 @@ import { toast } from "sonner";
 
 export default function SellerSubscriptionPage() {
    const { data: session } = useSession();
-   // const [loading, setLoading] = useState(false);
    const [loading, setLoading] = useState(false);
+   const [loadingPlanId, setLoadingPlanId] = useState(null);
    const [activeSub, setActiveSub] = useState(null);
    const [checking, setChecking] = useState(true);
    const [sellerInfo, setSellerInfo] = useState(null);
@@ -116,7 +116,7 @@ export default function SellerSubscriptionPage() {
          return;
       }
 
-      // setLoadingPlanId(planId);
+      setLoadingPlanId(planId);
       // 3-Month Free Coupon → Skip Razorpay
       if (appliedCoupon?.type === "seller_free_3months") {
          try {
@@ -146,7 +146,7 @@ export default function SellerSubscriptionPage() {
       }
 
       // Normal / Discounted payment flow
-      setLoadingPlanId(planId);
+
       try {
          const res = await fetch("/api/subscription", {
             method: "POST",
@@ -293,7 +293,7 @@ export default function SellerSubscriptionPage() {
                   <button
                      onClick={() => handleSubscribe(plan.id)}
                      disabled={loadingPlanId === plan.id}
-                     className={`${loading
+                     className={`${loadingPlanId
                         ? "bg-gray-400 cursor-not-allowed"
                         : "bg-blue-600 hover:bg-blue-700"
                         } text-white px-6 py-2 rounded-lg mt-auto`}

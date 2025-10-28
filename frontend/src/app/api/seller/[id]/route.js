@@ -1,7 +1,8 @@
 import connectDB from "@/lib/db/db";
 import Seller from "@/models/user/seller";
 
-export async function GET(req, { params }) {
+export async function GET(req, context) {
+   const { params } = await context;
   try {
     await connectDB();
     const seller = await Seller.findById(params.id).lean();
