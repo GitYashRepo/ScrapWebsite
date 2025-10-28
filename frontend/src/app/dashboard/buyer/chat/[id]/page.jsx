@@ -58,7 +58,7 @@ export default function BuyerChatPage() {
       if (!buyerId || !sellerId || !productId) return;
 
       if (!socket) {
-         socket = io("https://scrapwebsite-1.onrender.com", {
+         socket = io("https://scrapwebsite-2.onrender.com", {
             transports: ["websocket", "polling"],
             query: {
                userId: buyerId,
