@@ -225,6 +225,7 @@ export default function SellerSubscriptionPage() {
    if (activeSub) {
       return (
          <div className="flex flex-col p-10 items-center">
+
             {sellerInfo && (
                <div className="mb-8 border border-gray-300 rounded-2xl shadow-lg p-6 bg-white max-w-md mx-auto text-left">
                   <h2 className="text-2xl font-bold mb-3 text-blue-700">Seller Details</h2>
@@ -246,6 +247,20 @@ export default function SellerSubscriptionPage() {
                <p>Start: {new Date(activeSub.startDate).toLocaleDateString()}</p>
                <p>End: {new Date(activeSub.endDate).toLocaleDateString()}</p>
                <p className="mt-4 text-gray-500 text-sm">You can renew after this subscription ends.</p>
+
+               {/* 🔹 Download Invoice Button */}
+               {activeSub && (
+                  <div className="mt-4">
+                     <a
+                        href={`/api/invoice/${activeSub._id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+                     >
+                        Download Invoice (PDF)
+                     </a>
+                  </div>
+               )}
             </div>
          </div>
       );

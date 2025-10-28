@@ -103,43 +103,56 @@ export default function BuyerDashboardPage() {
             <h2 className="text-xl font-semibold mb-2">Active Subscription</h2>
 
             {subscription ? (
-               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                     <p className="text-gray-500 text-sm">Plan Name</p>
-                     <p className="text-lg font-semibold capitalize">
-                        {subscription.planName.replace("buyer_", "").replace("_", " ")}
-                     </p>
+               <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                     <div>
+                        <p className="text-gray-500 text-sm">Plan Name</p>
+                        <p className="text-lg font-semibold capitalize">
+                           {subscription.planName.replace("buyer_", "").replace("_", " ")}
+                        </p>
+                     </div>
+                     <div>
+                        <p className="text-gray-500 text-sm">Amount</p>
+                        <p className="text-lg font-semibold">
+                           ₹{subscription.amount}
+                        </p>
+                     </div>
+                     <div>
+                        <p className="text-gray-500 text-sm">Start Date</p>
+                        <p className="text-lg font-semibold">
+                           {new Date(subscription.startDate).toLocaleDateString()}
+                        </p>
+                     </div>
+                     <div>
+                        <p className="text-gray-500 text-sm">End Date</p>
+                        <p className="text-lg font-semibold">
+                           {new Date(subscription.endDate).toLocaleDateString()}
+                        </p>
+                     </div>
+                     <div>
+                        <p className="text-gray-500 text-sm">Status</p>
+                        <p
+                           className={`text-lg font-semibold ${subscription.status === "active"
+                              ? "text-green-600"
+                              : "text-red-600"
+                              }`}
+                        >
+                           {subscription.status}
+                        </p>
+                     </div>
                   </div>
-                  <div>
-                     <p className="text-gray-500 text-sm">Amount</p>
-                     <p className="text-lg font-semibold">
-                        ₹{subscription.amount}
-                     </p>
-                  </div>
-                  <div>
-                     <p className="text-gray-500 text-sm">Start Date</p>
-                     <p className="text-lg font-semibold">
-                        {new Date(subscription.startDate).toLocaleDateString()}
-                     </p>
-                  </div>
-                  <div>
-                     <p className="text-gray-500 text-sm">End Date</p>
-                     <p className="text-lg font-semibold">
-                        {new Date(subscription.endDate).toLocaleDateString()}
-                     </p>
-                  </div>
-                  <div>
-                     <p className="text-gray-500 text-sm">Status</p>
-                     <p
-                        className={`text-lg font-semibold ${subscription.status === "active"
-                           ? "text-green-600"
-                           : "text-red-600"
-                           }`}
+                  {/* 🔹 Download Invoice Button */}
+                  <div className="mt-4">
+                     <a
+                        href={`/api/invoice/${subscription._id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
                      >
-                        {subscription.status}
-                     </p>
+                        Download Invoice (PDF)
+                     </a>
                   </div>
-               </div>
+               </>
             ) : (
                <p className="text-gray-500 text-center">
                   No active subscription found.
