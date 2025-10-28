@@ -81,14 +81,14 @@ export async function GET(req, context) {
 
     // --- Company info (left, under logo) ---
     let y = height - 110;
-    drawText("Kabaad Mandi Pvt. Ltd.", 50, y, 12, rgb(0, 0, 0.6), true);
+    drawText("Kabaad Mandi", 50, y, 12, rgb(0, 0, 0.6), true);
     drawText("Haryana, India - 123106", 50, (y -= 15));
     drawText("Email: kabaadmandi@gmail.com", 50, (y -= 15));
-    drawText("Phone: +91 80033 16534", 50, (y -= 15));
+    drawText("Phone: +91 80033-16534", 50, (y -= 15));
 
     // --- Invoice meta box (moved upwards, right) ---
     const boxTop = height - 100; // moved up for better alignment with header
-    const boxHeight = 70;
+    const boxHeight = 75;
     const boxX = width - 230;
     const boxW = 180;
 
@@ -103,10 +103,16 @@ export async function GET(req, context) {
       borderWidth: 1,
     });
 
-    const invoiceDate = subscription.startDate ? new Date(subscription.startDate) : new Date();
+    // Format dates safely
+    const startDate = subscription.startDate ? new Date(subscription.startDate) : null;
+    const endDate = subscription.endDate ? new Date(subscription.endDate) : null;
+    const formattedStart = startDate ? startDate.toLocaleDateString() : "N/A";
+    const formattedEnd = endDate ? endDate.toLocaleDateString() : "N/A";
+
     drawText(`Invoice ID: INV-${subscription._id.toString().slice(-6)}`, boxX + 10, boxTop - 20, 10);
-    drawText(`Date: ${invoiceDate.toLocaleDateString()}`, boxX + 10, boxTop - 35, 10);
-    drawText(`User Type: ${subscription.userType}`, boxX + 10, boxTop - 50, 10);
+    drawText(`User Type: ${subscription.userType}`, boxX + 10, boxTop - 35, 10);
+    drawText(`Start Date: ${formattedStart}`, boxX + 10, boxTop - 50, 10);
+    drawText(`End Date: ${formattedEnd}`, boxX + 10, boxTop - 65, 10);
 
     // --- Bill To ---
     y = height - 210;
