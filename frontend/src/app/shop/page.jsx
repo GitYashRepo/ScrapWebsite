@@ -17,7 +17,8 @@ const ShopPage = () => {
    const [products, setProducts] = useState([]);
    const [loading, setLoading] = useState(false);
    const [message, setMessage] = useState("");
-   const [buying, setBuying] = useState(false);
+   // const [buying, setBuying] = useState(false);
+   const [buyingProductId, setBuyingProductId] = useState(null);
    const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
 
    // ✅ Fetch all available products (for buyers and sellers)
@@ -71,7 +72,7 @@ const ShopPage = () => {
          router.push("/dashboard/buyer/subscription");
          return;
       }
-      setBuying(true);
+      setBuyingProductId(productId);
       const chatUrl = `/dashboard/buyer/chat/${productId}`;
       router.push(chatUrl);
    };
@@ -137,10 +138,10 @@ const ShopPage = () => {
                            <div className="flex gap-2">
                               <button
                                  onClick={() => handleBuyNow(product._id)}
-                                 disabled={buying || loading}
+                                 disabled={buyingProductId === product._id || loading}
                                  className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 disabled:opacity-50"
                               >
-                                 {buying ? "Opening Chat..." : "Buy"}
+                                 {buyingProductId === product._id ? "Opening Chat..." : "Buy"}
                               </button>
 
                               <button

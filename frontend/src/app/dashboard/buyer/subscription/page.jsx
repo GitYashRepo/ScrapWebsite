@@ -8,7 +8,8 @@ import { toast } from "sonner"
 
 export default function BuyerSubscriptionPage() {
    const { data: session } = useSession();
-   const [loading, setLoading] = useState(false);
+   // const [loading, setLoading] = useState(false);
+   const [loadingPlanId, setLoadingPlanId] = useState(null);
 
    const plans = [
       { id: "buyer_monthly", label: "1 Month", price: 200 },
@@ -23,7 +24,7 @@ export default function BuyerSubscriptionPage() {
          return;
       }
 
-      setLoading(true);
+      setLoadingPlanId(planId);
 
       try {
          // 1️⃣ Create order from backend
@@ -78,7 +79,7 @@ export default function BuyerSubscriptionPage() {
          console.error(error);
          toast.error("Something went wrong. Please try again.");
       } finally {
-         setLoading(false);
+         setLoadingPlanId(null);
       }
    };
 
@@ -104,13 +105,13 @@ export default function BuyerSubscriptionPage() {
                   <p className="text-3xl font-bold mb-4">₹{plan.price}</p>
                   <button
                      onClick={() => handleSubscribe(plan.id)}
-                     disabled={loading}
+                     disabled={loadingPlanId === plan.id}
                      className={`${loading
                         ? "bg-gray-400 cursor-not-allowed"
                         : "bg-blue-600 hover:bg-blue-700"
                         } text-white px-6 py-2 rounded-lg mt-auto`}
                   >
-                     {loading ? "Processing..." : "Subscribe"}
+                     {loadingPlanId === plan.id ? "Processing..." : "Subscribe"}
                   </button>
                </div>
             ))}
