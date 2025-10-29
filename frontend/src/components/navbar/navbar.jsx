@@ -147,8 +147,7 @@ export function Navbar() {
                </SelectTrigger>
                <SelectContent>
                   <div className="max-h-40 overflow-y-auto">
-                     {/* 👆 shows ~3–4 items before scrolling (adjust as needed, e.g., max-h-48) */}
-                     <SelectItem value="all">All categories</SelectItem>
+                     <SelectItem value="all" disabled className="opacity-50 cursor-not-allowed">All categories</SelectItem>
                      {categories.map((cat) => (
                         <SelectItem key={cat._id} value={cat.name.toLowerCase()}>
                            {cat.name}
