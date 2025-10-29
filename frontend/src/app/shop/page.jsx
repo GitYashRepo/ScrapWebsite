@@ -12,6 +12,14 @@ import {
    SelectContent,
    SelectItem,
 } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import {
+   Tooltip,
+   TooltipTrigger,
+   TooltipContent,
+   TooltipProvider,
+} from "@/components/ui/tooltip";
+
 
 const ShopPage = () => {
    const { id } = useParams();
@@ -152,32 +160,39 @@ const ShopPage = () => {
          {/* 🔹 FILTERS SECTION */}
          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 bg-gray-50 p-4 rounded-lg shadow-sm">
             {/* Price Range */}
-            <div>
-               <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Price Range (₹/kg)
-               </label>
-               <div className="flex flex-col">
-                  <input
-                     type="range"
-                     min="0"
-                     max={maxProductPrice}
-                     value={priceRange[0]}
-                     onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
-                     className="w-full accent-green-600"
-                  />
-                  <input
-                     type="range"
-                     min="0"
-                     max={maxProductPrice}
-                     value={priceRange[1]}
-                     onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
-                     className="w-full accent-green-600"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                     ₹{priceRange[0]} - ₹{priceRange[1]}
-                  </p>
+            <TooltipProvider>
+               <div className="px-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 pb-2">
+                     Seller / Company
+                  </label>
+                  <div className="relative flex flex-col gap-2">
+                     <Slider
+                        value={priceRange}
+                        min={0}
+                        max={maxProductPrice}
+                        step={10}
+                        onValueChange={(value) => setPriceRange(value)}
+                        className="w-full"
+                        renderThumb={(props, index) => (
+                           <Tooltip key={index}>
+                              <TooltipTrigger asChild>
+                                 <div {...props} />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                 ₹{priceRange[index]}
+                              </TooltipContent>
+                           </Tooltip>
+                        )}
+                     />
+
+                     <div className="flex justify-between text-xs text-gray-600 mt-2">
+                        <span>₹{priceRange[0]}</span>
+                        <span>₹{priceRange[1]}</span>
+                     </div>
+                  </div>
                </div>
-            </div>
+            </TooltipProvider>
+
 
             {/* Category */}
             <div>
@@ -261,9 +276,13 @@ const ShopPage = () => {
                            />
                         )}
 
-                        <div className="flex flex-row justify-between items-center">
-                           <h2 className="font-semibold text-lg">{product.name}</h2>
-                           <p className="font-semibold">{product.quantity} Kg</p>
+                        <div className="flex flex-row justify-start items-start gap-10">
+                           <div className="w-[80%]">
+                              <h2 className="font-semibold text-lg">{product.name}</h2>
+                           </div>
+                           <div className="w-[20%]">
+                              <p className="font-semibold">{product.quantity} Kg</p>
+                           </div>
                         </div>
 
                         <p className="text-sm text-gray-600 line-clamp-2">{product.description}</p>
