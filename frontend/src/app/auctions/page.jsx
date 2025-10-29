@@ -15,12 +15,18 @@ const AuctionProductsPage = () => {
    const userRole = session?.user?.role?.toLowerCase();
 
    const [auctions, setAuctions] = useState([]);
+   const [filteredAuctions, setFilteredAuctions] = useState([]);
    const [loading, setLoading] = useState(false);
-   const [message, setMessage] = useState("");
    const [buying, setBuying] = useState(false);
    const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
 
-   // ✅ Fetch all auctions (visible to both buyers and sellers)
+   // 🔹 Filter states
+   const [priceRange, setPriceRange] = useState({ min: "", max: "" });
+   const [category, setCategory] = useState("");
+   const [quantity, setQuantity] = useState("");
+   const [startDate, setStartDate] = useState("");
+
+   // ✅ Fetch auctions
    useEffect(() => {
       const fetchAuctions = async () => {
          try {
@@ -32,6 +38,7 @@ const AuctionProductsPage = () => {
             if (!res.ok) throw new Error("Failed to fetch auction products");
             const data = await res.json();
             setAuctions(data);
+            setFilteredAuctions(data);
          } catch (error) {
             console.error(error);
          } finally {
@@ -41,7 +48,7 @@ const AuctionProductsPage = () => {
       fetchAuctions();
    }, []);
 
-   // ✅ Check subscription — only for buyers
+   // ✅ Check buyer subscription
    useEffect(() => {
       const checkSubscription = async () => {
          if (userRole !== "buyer" || !userId) return;
@@ -60,6 +67,7 @@ const AuctionProductsPage = () => {
       checkSubscription();
    }, [userId, userRole]);
 
+   // ✅ Handle pitching
    const handlePitching = async (productId) => {
       if (userRole !== "buyer") {
          toast.error("Only buyers can pitch or start a chat.");
@@ -75,11 +83,50 @@ const AuctionProductsPage = () => {
       router.push(`/dashboard/buyer/auction/${productId}`);
    };
 
+   // ✅ Filter logic
+   useEffect(() => {
+      let filtered = [...auctions];
+
+      if (priceRange.min)
+         filtered = filtered.filter(
+            (a) => a.pricePerKg >= Number(priceRange.min)
+         );
+      if (priceRange.max)
+         filtered = filtered.filter(
+            (a) => a.pricePerKg <= Number(priceRange.max)
+         );
+
+      if (category)
+         filtered = filtered.filter(
+            (a) => a.category?.name?.toLowerCase() === category.toLowerCase()
+         );
+
+      if (quantity)
+         filtered = filtered.filter(
+            (a) => a.quantity >= Number(quantity)
+         );
+
+      if (startDate)
+         filtered = filtered.filter(
+            (a) =>
+               new Date(a.auctionStart).toISOString().split("T")[0] === startDate
+         );
+
+      setFilteredAuctions(filtered);
+   }, [priceRange, category, quantity, startDate, auctions]);
+
+   // ✅ Get distinct categories for dropdown
+   const categoryOptions = [
+      ...new Set(auctions.map((a) => a.category?.name).filter(Boolean)),
+   ];
+
    if (auctions.length === 0 && !loading) {
       return (
          <div className="min-h-[80vh] flex flex-col justify-center items-center p-6">
             <h2 className="text-xl font-semibold mb-4">No Active Auctions Available</h2>
-            <p className="text-gray-600">Please check back later for upcoming auctions.</p>
+            <p className="text-gray-600">
+               Please check your internet connection or check back later.
+            </p>
          </div>
       );
    }
@@ -88,22 +135,91 @@ const AuctionProductsPage = () => {
       <div className="min-h-[80vh] p-6">
          <h1 className="text-2xl font-bold mb-4">Active Auctions</h1>
 
-         {message && (
-            <div className="mb-4 text-center text-sm font-medium text-blue-700 bg-blue-50 p-2 rounded-lg">
-               {message}
+         {/* 🔹 FILTER SECTION */}
+         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 bg-gray-50 p-4 rounded-lg shadow-sm">
+            <div>
+               <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Min / Max Price (₹/kg)
+               </label>
+               <div className="flex gap-2">
+                  <input
+                     type="number"
+                     placeholder="Min"
+                     className="border rounded-md p-2 w-full"
+                     value={priceRange.min}
+                     onChange={(e) =>
+                        setPriceRange((p) => ({ ...p, min: e.target.value }))
+                     }
+                  />
+                  <input
+                     type="number"
+                     placeholder="Max"
+                     className="border rounded-md p-2 w-full"
+                     value={priceRange.max}
+                     onChange={(e) =>
+                        setPriceRange((p) => ({ ...p, max: e.target.value }))
+                     }
+                  />
+               </div>
             </div>
-         )}
+
+            <div>
+               <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Category
+               </label>
+               <select
+                  className="border rounded-md p-2 w-full"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+               >
+                  <option value="">All</option>
+                  {categoryOptions.map((cat, i) => (
+                     <option key={i} value={cat}>
+                        {cat}
+                     </option>
+                  ))}
+               </select>
+            </div>
+
+            <div>
+               <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Minimum Quantity (kg)
+               </label>
+               <input
+                  type="number"
+                  placeholder="e.g. 100"
+                  className="border rounded-md p-2 w-full"
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
+               />
+            </div>
+
+            <div>
+               <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Auction Start Date
+               </label>
+               <input
+                  type="date"
+                  className="border rounded-md p-2 w-full"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+               />
+            </div>
+         </div>
 
          {loading ? (
-            // 🔹 Show skeletons while loading
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-[5vw]">
                {Array.from({ length: 6 }).map((_, i) => (
                   <SkeletonCard key={i} />
                ))}
             </div>
+         ) : filteredAuctions.length === 0 ? (
+            <div className="text-center text-gray-600 mt-10">
+               No auctions match your filters.
+            </div>
          ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-               {auctions.map((product) => (
+               {filteredAuctions.map((product) => (
                   <div
                      key={product._id}
                      className="border rounded-xl shadow-sm p-4 hover:shadow-md transition"
@@ -146,7 +262,6 @@ const AuctionProductsPage = () => {
                      </p>
 
                      <div className="flex gap-2 mt-4">
-                        {/* ✅ Show Pitch button only for Buyers */}
                         {userRole === "buyer" ? (
                            <div className="w-full flex gap-2">
                               <button
@@ -171,7 +286,7 @@ const AuctionProductsPage = () => {
                         ) : (
                            <div className="w-full border-t pt-3">
                               <p className="text-sm text-red-600 font-medium text-center">
-                                 Sellers are not allowed to bid in auctions, SiginUp as Buyer to Bid in Auction.
+                                 Sellers are not allowed to bid in auctions. Sign up as a buyer to bid.
                               </p>
                            </div>
                         )}

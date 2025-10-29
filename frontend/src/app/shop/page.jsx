@@ -5,6 +5,13 @@ import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import {
+   Select,
+   SelectTrigger,
+   SelectValue,
+   SelectContent,
+   SelectItem,
+} from "@/components/ui/select";
 
 const ShopPage = () => {
    const { id } = useParams();
@@ -15,6 +22,7 @@ const ShopPage = () => {
    const userRole = session?.user?.role?.toLowerCase();
 
    const [products, setProducts] = useState([]);
+   const [filteredProducts, setFilteredProducts] = useState([]);
    const [loading, setLoading] = useState(false);
    const [message, setMessage] = useState("");
    const [buyingProductId, setBuyingProductId] = useState(null);
@@ -23,6 +31,13 @@ const ShopPage = () => {
    const [currentPage, setCurrentPage] = useState(1);
    const productsPerPage = 16;
 
+   // 🔹 Filter states
+   const [priceRange, setPriceRange] = useState([0, 5000]); // min, max
+   const [category, setCategory] = useState("");
+   const [quantity, setQuantity] = useState("");
+   const [seller, setSeller] = useState("");
+
+   // Fetch products
    useEffect(() => {
       const fetchProducts = async () => {
          try {
@@ -31,6 +46,7 @@ const ShopPage = () => {
             if (!res.ok) throw new Error("Failed to fetch products");
             const data = await res.json();
             setProducts(data);
+            setFilteredProducts(data);
          } catch (error) {
             console.error(error);
             setMessage("⚠️ Please check your internet connection and reload the website.");
@@ -41,6 +57,7 @@ const ShopPage = () => {
       fetchProducts();
    }, []);
 
+   // Buyer subscription check
    useEffect(() => {
       const checkSubscription = async () => {
          if (userRole !== "buyer" || !buyerId) return;
@@ -70,19 +87,57 @@ const ShopPage = () => {
          return;
       }
       setBuyingProductId(productId);
-      const chatUrl = `/dashboard/buyer/chat/${productId}`;
-      router.push(chatUrl);
+      router.push(`/dashboard/buyer/chat/${productId}`);
    };
 
+   // ✅ Filter logic
+   useEffect(() => {
+      let filtered = [...products];
+
+      filtered = filtered.filter(
+         (p) => p.pricePerKg >= priceRange[0] && p.pricePerKg <= priceRange[1]
+      );
+
+      // ✅ Filter by category (ignore "all")
+      if (category && category !== "all") {
+         filtered = filtered.filter((p) => {
+            const catName =
+               typeof p.category === "string" ? p.category : p.category?.name;
+            return catName?.toLowerCase() === category.toLowerCase();
+         });
+      }
+
+
+      if (quantity)
+         filtered = filtered.filter((p) => p.quantity >= Number(quantity));
+
+      if (seller)
+         filtered = filtered.filter(
+            (p) =>
+               p.seller?.storeName?.toLowerCase().includes(seller.toLowerCase()) ||
+               p.seller?.name?.toLowerCase().includes(seller.toLowerCase())
+         );
+
+      setFilteredProducts(filtered);
+   }, [priceRange, category, quantity, seller, products]);
+
    // Pagination logic
-   const totalPages = Math.ceil(products.length / productsPerPage);
+   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
    const startIndex = (currentPage - 1) * productsPerPage;
-   const currentProducts = products.slice(startIndex, startIndex + productsPerPage);
+   const currentProducts = filteredProducts.slice(startIndex, startIndex + productsPerPage);
 
    const handlePageChange = (page) => {
       setCurrentPage(page);
       window.scrollTo({ top: 0, behavior: "smooth" });
    };
+
+   // Unique category list
+   const categoryOptions = [
+      ...new Set(products.map((p) => p.category?.name).filter(Boolean)),
+   ];
+
+   // Determine max price dynamically for slider
+   const maxProductPrice = Math.max(...products.map((p) => p.pricePerKg || 0), 5000);
 
    return (
       <div className="p-6 min-h-[80vh]">
@@ -94,6 +149,90 @@ const ShopPage = () => {
             </div>
          )}
 
+         {/* 🔹 FILTERS SECTION */}
+         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 bg-gray-50 p-4 rounded-lg shadow-sm">
+            {/* Price Range */}
+            <div>
+               <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Price Range (₹/kg)
+               </label>
+               <div className="flex flex-col">
+                  <input
+                     type="range"
+                     min="0"
+                     max={maxProductPrice}
+                     value={priceRange[0]}
+                     onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
+                     className="w-full accent-green-600"
+                  />
+                  <input
+                     type="range"
+                     min="0"
+                     max={maxProductPrice}
+                     value={priceRange[1]}
+                     onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
+                     className="w-full accent-green-600"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                     ₹{priceRange[0]} - ₹{priceRange[1]}
+                  </p>
+               </div>
+            </div>
+
+            {/* Category */}
+            <div>
+               <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+               <Select value={category} onValueChange={(val) => setCategory(val)}>
+                  <SelectTrigger className="w-full">
+                     <SelectValue placeholder="All" />
+                  </SelectTrigger>
+
+                  {/* Make the dropdown content scrollable after ~3-4 items */}
+                  <SelectContent>
+                     <div className="max-h-36 overflow-y-auto">
+                        {/* optionally keep an "All" disabled item or selectable */}
+                        <SelectItem value="all">All</SelectItem>
+
+                        {categoryOptions.map((cat, i) => (
+                           <SelectItem key={i} value={cat}>
+                              {cat}
+                           </SelectItem>
+                        ))}
+                     </div>
+                  </SelectContent>
+               </Select>
+            </div>
+
+            {/* Quantity */}
+            <div>
+               <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Minimum Quantity (kg)
+               </label>
+               <input
+                  type="number"
+                  placeholder="e.g. 100"
+                  className="border rounded-md p-2 w-full"
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
+               />
+            </div>
+
+            {/* Seller */}
+            <div>
+               <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Seller / Company
+               </label>
+               <input
+                  type="text"
+                  placeholder="Search by seller name"
+                  className="border rounded-md p-2 w-full"
+                  value={seller}
+                  onChange={(e) => setSeller(e.target.value)}
+               />
+            </div>
+         </div>
+
+         {/* Products Section */}
          {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 px-[5vw]">
                {Array.from({ length: 8 }).map((_, i) => (
@@ -103,7 +242,7 @@ const ShopPage = () => {
          ) : currentProducts.length === 0 ? (
             <div className="flex justify-center items-center min-h-[40vh]">
                <p className="text-gray-600 text-center bg-yellow-50 border border-yellow-200 px-4 py-3 rounded-lg">
-                  ⚠️ No products available. Please check your internet connection and reload the website.
+                  ⚠️ No products match your filters. Please adjust your selections.
                </p>
             </div>
          ) : (
@@ -129,7 +268,9 @@ const ShopPage = () => {
 
                         <p className="text-sm text-gray-600 line-clamp-2">{product.description}</p>
 
-                        <p className="text-green-700 font-bold mt-2">Price: ₹{product.pricePerKg}/kg</p>
+                        <p className="text-green-700 font-bold mt-2">
+                           Price: ₹{product.pricePerKg}/kg
+                        </p>
 
                         <p className="text-xs text-gray-500 mt-1">
                            Category: {product.category?.name || "Uncategorized"}
@@ -158,7 +299,7 @@ const ShopPage = () => {
                               </div>
                            ) : (
                               <p className="text-sm text-red-600 font-medium text-center border-t pt-3">
-                                 Sellers are not allowed to buy products. Sign up as a Buyer to purchase products.
+                                 Sellers are not allowed to buy products. Sign up as a Buyer to purchase.
                               </p>
                            )}
                         </div>
@@ -182,8 +323,8 @@ const ShopPage = () => {
                            key={index}
                            onClick={() => handlePageChange(index + 1)}
                            className={`px-3 py-2 rounded-md border ${currentPage === index + 1
-                                 ? "bg-green-600 text-white border-green-600"
-                                 : "bg-white hover:bg-gray-100"
+                              ? "bg-green-600 text-white border-green-600"
+                              : "bg-white hover:bg-gray-100"
                               }`}
                         >
                            {index + 1}
