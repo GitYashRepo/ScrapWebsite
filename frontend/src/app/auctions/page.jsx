@@ -232,9 +232,13 @@ const AuctionProductsPage = () => {
                         />
                      )}
 
-                     <div className="flex flex-row justify-between items-center">
-                        <h2 className="font-semibold text-lg">{product.name}</h2>
-                        <p className="font-semibold">{product.quantity} Kg</p>
+                     <div className="flex flex-row justify-start items-start gap-10">
+                        <div className="w-[80%]">
+                           <h2 className="font-semibold text-lg">{product.name}</h2>
+                        </div>
+                        <div className="w-[20%]">
+                           <p className="font-semibold">{product.quantity} Kg</p>
+                        </div>
                      </div>
 
                      <p className="text-sm text-gray-600 line-clamp-2">
