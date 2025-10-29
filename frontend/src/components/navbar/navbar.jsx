@@ -76,6 +76,24 @@ export function Navbar() {
          }
       };
 
+      const handleSelectCategory = (value) => {
+         setCategory(value);
+         if (value === "all") {
+            router.push("/categories");
+            return;
+         }
+
+         // find the selected category by name
+         const selectedCat = categories.find(
+            (cat) => cat.name.toLowerCase() === value.toLowerCase()
+         );
+         if (selectedCat) {
+            router.push(`/categories/${selectedCat._id}`);
+         } else {
+            toast.error("Category not found!");
+         }
+      };
+
       return (
          <form
             className="w-[100%] justify-center items-stretch gap-2 hidden md:flex"
@@ -97,11 +115,12 @@ export function Navbar() {
                </PopoverTrigger>
 
                <PopoverContent
+                  onOpenAutoFocus={(e) => e.preventDefault()}
                   className="w-[var(--radix-popover-trigger-width)] p-0"
                   align="start"
                >
                   <Command>
-                     <CommandList>
+                     <CommandList className="max-h-40 overflow-y-auto">
                         <CommandEmpty>No categories found.</CommandEmpty>
                         <CommandGroup>
                            {filteredCategories.map((cat) => (
@@ -122,17 +141,20 @@ export function Navbar() {
                </PopoverContent>
             </Popover>
 
-            <Select value={category} onValueChange={setCategory}>
+            <Select value={category} onValueChange={handleSelectCategory}>
                <SelectTrigger className="w-auto">
                   <SelectValue placeholder="All categories" />
                </SelectTrigger>
                <SelectContent>
-                  <SelectItem value="all">All categories</SelectItem>
-                  {categories.map((cat) => (
-                     <SelectItem key={cat._id} value={cat.name.toLowerCase()}>
-                        {cat.name}
-                     </SelectItem>
-                  ))}
+                  <div className="max-h-40 overflow-y-auto">
+                     {/* 👆 shows ~3–4 items before scrolling (adjust as needed, e.g., max-h-48) */}
+                     <SelectItem value="all">All categories</SelectItem>
+                     {categories.map((cat) => (
+                        <SelectItem key={cat._id} value={cat.name.toLowerCase()}>
+                           {cat.name}
+                        </SelectItem>
+                     ))}
+                  </div>
                </SelectContent>
             </Select>
 
@@ -244,7 +266,7 @@ export function Navbar() {
                         <ChevronDown className="h-4 w-4 opacity-70" aria-hidden="true" />
                      </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="">
+                  <DropdownMenuContent className="max-h-60 overflow-y-auto">
                      <DropdownMenuLabel>Browse categories</DropdownMenuLabel>
                      <DropdownMenuSeparator />
                      {categories.map((cat) => (
@@ -300,12 +322,15 @@ export function Navbar() {
                         <SelectValue placeholder="All categories" />
                      </SelectTrigger>
                      <SelectContent>
-                        <SelectItem value="all">All categories</SelectItem>
-                        {categories.map((cat) => (
-                           <SelectItem key={cat._id} value={cat.name.toLowerCase()}>
-                              {cat.name}
-                           </SelectItem>
-                        ))}
+                        <div className="max-h-40 overflow-y-auto">
+                           {/* 👆 shows ~3–4 items before scrolling (adjust as needed, e.g., max-h-48) */}
+                           <SelectItem value="all">All categories</SelectItem>
+                           {categories.map((cat) => (
+                              <SelectItem key={cat._id} value={cat.name.toLowerCase()}>
+                                 {cat.name}
+                              </SelectItem>
+                           ))}
+                        </div>
                      </SelectContent>
                   </Select>
 
