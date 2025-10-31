@@ -5,6 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import Spinner from "@/components/Loader/spinner/spinner";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner"
+import { fetchWithRetry } from "@/lib/utils";
+
 
 
 const ProductDetails = () => {
@@ -28,7 +30,7 @@ const ProductDetails = () => {
       const fetchProduct = async () => {
          try {
             setLoading(true);
-            const res = await fetch(`/api/product/${id}`);
+            const res = await fetchWithRetry(`/api/product/${id}`);
             if (!res.ok) throw new Error("Failed to fetch product details");
             const data = await res.json();
             setProduct(data);
@@ -104,7 +106,15 @@ const ProductDetails = () => {
                <Spinner />
             </div>
          ) : error ? (
-            <p className="text-red-600 text-center">{error}</p>
+            <div className="text-center p-6 bg-yellow-50 border border-yellow-200 rounded-xl">
+               <p className="text-yellow-700 font-semibold mb-2">{error}</p>
+               <button
+                  onClick={() => window.location.reload()}
+                  className="mt-3 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+               >
+                  Retry
+               </button>
+            </div>
          ) : product ? (
             <>
                <h1 className="text-2xl font-bold mb-4">Product: {product.name}</h1>
