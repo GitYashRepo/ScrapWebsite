@@ -178,12 +178,14 @@ export function Navbar() {
                { label: "Dashboard", href: `/dashboard/buyer` },
                { label: "Enquiries", href: `/dashboard/buyer/enquiries` },
                { label: "Run Ads", href: `/dashboard/ads` },
+               { label: "Change Password", href: `/dashboard/common/change-password` },
             ],
             seller: [
                { label: "Dashboard", href: `/dashboard/seller` },
                { label: "Chats", href: `/dashboard/seller/chat` },
                { label: "Active Subscription", href: `/dashboard/seller/subscription` },
                { label: "Run Ads", href: `/dashboard/ads` },
+               { label: "Change Password", href: `/dashboard/common/change-password` },
             ],
             admin: [
                { label: "Dashboard", href: `/dashboard/admin` },
@@ -191,6 +193,7 @@ export function Navbar() {
                { label: "Stats", href: `/dashboard/admin/stats` },
                { label: "Create Coupon", href: `/dashboard/admin/coupons` },
                { label: "Suspend / Undo", href: `/dashboard/admin/user-search` },
+               { label: "Generate Password", href: `/dashboard/admin/reset-password` },
             ],
          };
 
