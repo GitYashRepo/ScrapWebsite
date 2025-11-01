@@ -2,364 +2,202 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import SkeletonCard from "@/components/Loader/skeletoncard/skeleton";
-import Link from "next/link";
-import { toast } from "sonner";
+import Spinner from "@/components/Loader/spinner/spinner";
+import { AlertCircle, CheckCircle, CreditCard, Store, User } from "lucide-react";
 
-export default function SellerDashboard() {
-   const { data: session } = useSession();
-   const [products, setProducts] = useState([]);
-   const [auctionProducts, setAuctionProducts] = useState([]);
+export default function SellerDashboardPage() {
+   const { data: session, status } = useSession();
+   const [seller, setSeller] = useState(null);
+   const [subscription, setSubscription] = useState(null);
    const [loading, setLoading] = useState(true);
-   const router = useRouter();
-
-   // Register Push Notification
-   // useEffect(() => {
-   //    async function setupPush() {
-   //       if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
-
-   //       const reg = await navigator.serviceWorker.register("/sw.js");
-   //       const permission = await Notification.requestPermission();
-   //       if (permission !== "granted") return;
-
-   //       const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-   //       const subscription = await reg.pushManager.subscribe({
-   //          userVisibleOnly: true,
-   //          applicationServerKey: urlBase64ToUint8Array(vapidKey),
-   //       });
-
-   //       await fetch("/api/notifications/send", {
-   //          method: "POST",
-   //          headers: { "Content-Type": "application/json" },
-   //          body: JSON.stringify({
-   //             sellerId: session?.user?.id,
-   //             subscription,
-   //          }),
-   //       });
-   //    }
-
-   //    if (session?.user?.id) setupPush();
-   // }, [session]);
-
-   function urlBase64ToUint8Array(base64String) {
-      const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-      const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-      const rawData = atob(base64);
-      const outputArray = new Uint8Array(rawData.length);
-      for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
-      return outputArray;
-   }
-
-   const fetchProducts = async () => {
-      try {
-         setLoading(true);
-         const res = await fetch("/api/product");
-         const data = await res.json();
-
-         if (res.ok) {
-            const normal = data.filter((p) => !p.isAuction);
-            const auctions = data.filter((p) => p.isAuction);
-            setProducts(normal);
-            setAuctionProducts(auctions);
-         }
-      } catch (error) {
-         console.error(error);
-      } finally {
-         setLoading(false);
-      }
-   };
 
    useEffect(() => {
-      fetchProducts();
-   }, []);
-
-   const checkSubscription = async () => {
-      if (!session?.user?.id) {
-         toast.info("Please log in first.");
-         return false;
-      }
-
-      const res = await fetch("/api/subscription/check", {
-         method: "POST",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({
-            userId: session.user.id,
-            userType: "Seller",
-         }),
-         cache: "no-store",
-      });
-
-      const data = await res.json();
-      return data.active;
-   };
-
-   const handleRestrictedAction = async (path) => {
-      const isActive = await checkSubscription();
-
-      if (isActive) {
-         router.push(path);
-      } else {
-         if (
-            confirm(
-               "You need an active subscription to access this feature. Purchase a plan now?"
-            )
-         ) {
-            router.push("/dashboard/seller/subscription");
+      const fetchData = async () => {
+         if (status !== "authenticated") {
+            setLoading(false);
+            return;
          }
-      }
-   };
 
-   const handleDelete = async (id) => {
-      if (!confirm("Are you sure you want to delete this product?")) return;
+         try {
+            // 🔹 Fetch seller details
+            const res = await fetch(`/api/seller/${session.user.id}`);
+            const data = await res.json();
+            setSeller(data);
 
-      const res = await fetch(`/api/product/${id}`, { method: "DELETE" });
-      if (res.ok) fetchProducts();
-   };
+            // 🔹 Fetch subscription info
+            const subRes = await fetch(`/api/subscription/check`, {
+               method: "POST",
+               headers: { "Content-Type": "application/json" },
+               body: JSON.stringify({
+                  userId: data?._id,
+                  userType: "Seller",
+               }),
+            });
+
+            const subData = await subRes.json();
+            if (subRes.ok && subData.active) {
+               setSubscription(subData.subscription);
+            }
+         } catch (err) {
+            console.error("Error fetching seller dashboard data:", err);
+         } finally {
+            setLoading(false);
+         }
+      };
+
+      fetchData();
+   }, [status, session]);
+
+   if (loading) return <Spinner />;
+
+   if (!seller)
+      return (
+         <div className="flex flex-col items-center justify-center h-[70vh] text-center">
+            <h2 className="text-2xl font-semibold">No Seller Details Found</h2>
+            <p className="text-gray-500 mt-2">
+               Please log in to view your dashboard.
+            </p>
+         </div>
+      );
 
    return (
-      <div className="p-4 md:p-6 min-h-[80vh] space-y-10">
-         {/* Header */}
-         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <h1 className="text-2xl font-bold">My Products</h1>
+      <div className="min-h-screen bg-gray-50 px-6 py-12 flex justify-center">
+         <div className="w-full max-w-5xl space-y-8">
+            {/* Header Section */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center">
+               <div>
+                  <h1 className="text-2xl font-bold text-gray-900">
+                     Seller Dashboard
+                  </h1>
+                  <p className="text-gray-500 text-sm mt-1">
+                     Overview of your business and subscription details
+                  </p>
+               </div>
+               {subscription && (
+                  <div
+                     className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${subscription.status === "active"
+                        ? "bg-green-50 text-green-700 border border-green-100"
+                        : "bg-red-50 text-red-700 border border-red-100"
+                        }`}
+                  >
+                     {subscription.status === "active" ? (
+                        <CheckCircle size={16} />
+                     ) : (
+                        <AlertCircle size={16} />
+                     )}
+                     {subscription.status.charAt(0).toUpperCase() +
+                        subscription.status.slice(1)}{" "}
+                     Subscription
+                  </div>
+               )}
+            </div>
 
-            <div className="flex flex-wrap gap-3">
-               <button
-                  onClick={() => handleRestrictedAction("/dashboard/seller/addproduct")}
-                  className="bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base hover:bg-blue-700 transition"
-               >
-                  + Add Product
-               </button>
+            {/* Main Card */}
+            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-8 space-y-10">
+               {/* Seller Info */}
+               <section>
+                  <div className="flex items-center gap-2 mb-6">
+                     <div className="p-2 rounded-lg bg-blue-50 text-blue-600">
+                        <Store size={20} />
+                     </div>
+                     <h2 className="text-lg font-semibold text-gray-800">
+                        Seller Information
+                     </h2>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
+                     <InfoItem label="Company Name" value={seller.storeName} />
+                     <InfoItem label="Owner Name" value={seller.ownerName} />
+                     <InfoItem label="Seller Code" value={seller.sellerCode} />
+                     <InfoItem label="Email" value={seller.email} />
+                     <InfoItem label="Phone" value={seller.phone} />
+                     <InfoItem label="Address" value={seller.address} />
+                     <InfoItem label="City" value={seller.city} />
+                     <InfoItem label="State" value={seller.state} />
+                     <InfoItem label="Pincode" value={seller.pinCode} />
+                  </div>
+               </section>
 
-               <button
-                  onClick={() => handleRestrictedAction("/dashboard/seller/addauctionproduct")}
-                  className="bg-purple-600 text-white px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base hover:bg-purple-700 transition"
-               >
-                  + Add Auction Product
-               </button>
+               <div className="border-t border-gray-100" />
 
-               <button
-                  onClick={() => handleRestrictedAction("/dashboard/seller/chat")}
-                  className="bg-green-600 text-white px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base hover:bg-green-700 transition"
-               >
-                  💬 Chats
-               </button>
+               {/* Subscription Info */}
+               <section>
+                  <div className="flex items-center gap-2 mb-6">
+                     <div className="p-2 rounded-lg bg-purple-50 text-purple-600">
+                        <CreditCard size={20} />
+                     </div>
+                     <h2 className="text-lg font-semibold text-gray-800">
+                        Subscription & Payment Details
+                     </h2>
+                  </div>
 
-               <Link
-                  href={"/dashboard/seller/subscription"}
-                  className="bg-green-600 text-white px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base hover:bg-green-700 transition"
-               >
-                  Active Subscription
-               </Link>
+                  {subscription ? (
+                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
+                        <InfoItem
+                           label="Plan Name"
+                           value={subscription.planName
+                              .replace("seller_", "")
+                              .replace("_", " ")}
+                        />
+                        <InfoItem
+                           label="Amount Paid"
+                           value={`₹${subscription.amount?.toLocaleString()}`}
+                        />
+                        <InfoItem
+                           label="Payment ID"
+                           value={subscription.paymentId || "—"}
+                        />
+                        <InfoItem
+                           label="Coupon Used"
+                           value={subscription.couponCode || "—"}
+                        />
+                        <InfoItem
+                           label="Start Date"
+                           value={
+                              subscription.startDate
+                                 ? new Date(subscription.startDate).toLocaleDateString()
+                                 : "—"
+                           }
+                        />
+                        <InfoItem
+                           label="End Date"
+                           value={
+                              subscription.endDate
+                                 ? new Date(subscription.endDate).toLocaleDateString()
+                                 : "—"
+                           }
+                        />
+                     </div>
+                  ) : (
+                     <p className="text-gray-500 text-sm">
+                        No active subscription found.
+                     </p>
+                  )}
+
+                  {subscription && (
+                     <div className="mt-8">
+                        <a
+                           href={`/api/invoice/${subscription._id}`}
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2.5 rounded-lg transition-all shadow-sm"
+                        >
+                           🧾 Download Invoice (PDF)
+                        </a>
+                     </div>
+                  )}
+               </section>
             </div>
          </div>
+      </div>
+   );
+}
 
-         {loading ? (
-            // Skeletons while loading
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-               {Array.from({ length: 6 }).map((_, i) => (
-                  <SkeletonCard key={i} />
-               ))}
-            </div>
-         ) : (
-            <>
-               {/* Normal Products Section */}
-               <section>
-                  <h2 className="text-xl font-semibold mb-4 border-b pb-2">
-                     🛒 Normal Products
-                  </h2>
-
-                  {products.length === 0 ? (
-                     <p className="text-gray-600 text-sm sm:text-base">
-                        No normal products listed yet.
-                     </p>
-                  ) : (
-                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {products.map((p) => (
-                           <div
-                              key={p._id}
-                              className="border rounded-xl p-4 shadow-sm hover:shadow-md transition bg-white"
-                           >
-                              <img
-                                 src={p.images?.[0] || "/placeholder.jpg"}
-                                 alt={p.name}
-                                 className="w-full h-44 sm:h-52 object-cover rounded-lg"
-                              />
-                              <h2 className="text-lg font-semibold mt-3">{p.name}</h2>
-                              <p className="text-gray-600 text-sm">{p.category?.name}</p>
-                              <p className="text-gray-900 font-bold mt-1">
-                                 ₹{p.pricePerKg}/kg
-                              </p>
-
-                              {/* Status */}
-                              <div className="mt-3">
-                                 <label className="text-sm text-gray-500 mr-2">Status:</label>
-                                 <select
-                                    value={p.status}
-                                    onChange={async (e) => {
-                                       const newStatus = e.target.value;
-                                       try {
-                                          const res = await fetch(`/api/product/${p._id}`, {
-                                             method: "PATCH",
-                                             headers: { "Content-Type": "application/json" },
-                                             body: JSON.stringify({ status: newStatus }),
-                                          });
-                                          const data = await res.json();
-                                          if (res.ok) {
-                                             toast.success(`✅ Product marked as "${newStatus}"`);
-                                             setProducts((prev) =>
-                                                prev.map((prod) =>
-                                                   prod._id === p._id
-                                                      ? { ...prod, status: newStatus }
-                                                      : prod
-                                                )
-                                             );
-                                          } else toast.error(data.error);
-                                       } catch {
-                                          toast.error("Error updating status");
-                                       }
-                                    }}
-                                    className={`border rounded px-2 py-1 mt-1 w-full sm:w-auto ${p.status === "available"
-                                       ? "bg-green-100 text-green-700"
-                                       : p.status === "out-of-stock"
-                                          ? "bg-yellow-100 text-yellow-700"
-                                          : "bg-red-100 text-red-700"
-                                       }`}
-                                 >
-                                    <option value="available">Available</option>
-                                    <option value="out-of-stock">Out of Stock</option>
-                                    <option value="discontinued">Discontinued</option>
-                                 </select>
-                              </div>
-
-                              <div className="flex flex-wrap gap-2 mt-3">
-                                 <button
-                                    onClick={() => handleDelete(p._id)}
-                                    className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
-                                 >
-                                    Delete
-                                 </button>
-                                 <button
-                                    onClick={() =>
-                                       router.push(`/dashboard/seller/editproduct/${p._id}`)
-                                    }
-                                    className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600"
-                                 >
-                                    ✏️ Edit
-                                 </button>
-                              </div>
-                           </div>
-                        ))}
-                     </div>
-                  )}
-               </section>
-
-               {/* Auction Products Section */}
-               <section>
-                  <h2 className="text-xl font-semibold mb-4 border-b pb-2">
-                     🕒 Auction Products
-                  </h2>
-
-                  {auctionProducts.length === 0 ? (
-                     <p className="text-gray-600 text-sm sm:text-base">
-                        No auction products added yet.
-                     </p>
-                  ) : (
-                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {auctionProducts.map((p) => (
-                           <div
-                              key={p._id}
-                              className="border rounded-xl p-4 shadow-sm bg-purple-50 hover:shadow-md transition"
-                           >
-                              <img
-                                 src={p.images?.[0] || "/placeholder.jpg"}
-                                 alt={p.name}
-                                 className="w-full h-44 sm:h-52 object-cover rounded-lg"
-                              />
-                              <h2 className="text-lg font-semibold mt-3">{p.name}</h2>
-                              <p className="text-gray-600 text-sm">{p.category?.name}</p>
-                              <p className="text-gray-900 font-bold mt-1">
-                                 ₹{p.pricePerKg}/kg
-                              </p>
-
-                              <div className="mt-3">
-                                 <label className="text-sm text-gray-500 mr-2">Status:</label>
-                                 <select
-                                    value={p.status}
-                                    onChange={async (e) => {
-                                       const newStatus = e.target.value;
-                                       try {
-                                          const res = await fetch(`/api/auctionproduct/${p._id}`, {
-                                             method: "PATCH",
-                                             headers: { "Content-Type": "application/json" },
-                                             body: JSON.stringify({ status: newStatus }),
-                                          });
-                                          const data = await res.json();
-                                          if (res.ok) {
-                                             toast.success(`✅ Auction product marked as "${newStatus}"`);
-                                             setAuctionProducts((prev) =>
-                                                prev.map((prod) =>
-                                                   prod._id === p._id
-                                                      ? { ...prod, status: newStatus }
-                                                      : prod
-                                                )
-                                             );
-                                          } else toast.error(data.error);
-                                       } catch {
-                                          toast.error("Error updating auction product status");
-                                       }
-                                    }}
-                                    className={`border rounded px-2 py-1 mt-1 w-full sm:w-auto ${p.status === "available"
-                                       ? "bg-green-100 text-green-700"
-                                       : p.status === "out-of-stock"
-                                          ? "bg-yellow-100 text-yellow-700"
-                                          : "bg-red-100 text-red-700"
-                                       }`}
-                                 >
-                                    <option value="available">Available</option>
-                                    <option value="out-of-stock">Out of Stock</option>
-                                    <option value="discontinued">Discontinued</option>
-                                 </select>
-                              </div>
-
-                              <p className="text-sm text-gray-700 mt-2">
-                                 ⏰ Ends on:{" "}
-                                 <span className="font-semibold text-purple-700">
-                                    {new Date(p.auctionEnd).toLocaleString()}
-                                 </span>
-                              </p>
-
-                              <div className="flex flex-wrap gap-2 mt-3">
-                                 <button
-                                    onClick={() => handleDelete(p._id)}
-                                    className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
-                                 >
-                                    Delete
-                                 </button>
-                                 <button
-                                    onClick={() =>
-                                       router.push(`/dashboard/seller/editauctionproduct/${p._id}`)
-                                    }
-                                    className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
-                                 >
-                                    ✏️ Edit
-                                 </button>
-                                 <button
-                                    onClick={() =>
-                                       router.push(`/dashboard/seller/auction-bids/${p._id}`)
-                                    }
-                                    className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
-                                 >
-                                    👁️ View Bids
-                                 </button>
-                              </div>
-                           </div>
-                        ))}
-                     </div>
-                  )}
-               </section>
-            </>
-         )}
+// 🧩 Reusable Info Item
+function InfoItem({ label, value }) {
+   return (
+      <div>
+         <p className="text-gray-500 text-xs mb-1">{label}</p>
+         <p className="text-gray-900 font-medium break-words">{value || "—"}</p>
       </div>
    );
 }

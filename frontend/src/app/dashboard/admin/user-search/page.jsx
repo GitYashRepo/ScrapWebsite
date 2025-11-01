@@ -210,6 +210,14 @@ export default function UserSearchPage() {
                      <p>Plan: {data.subscription.planName}</p>
                      <p>Amount: ₹{data.subscription.amount}</p>
                      <p>Status: {data.subscription.status}</p>
+                     <div>
+                        <span className="font-medium">Signup Date: </span>
+                        <span>
+                           {data.user.createdAt
+                              ? new Date(data.user.createdAt).toLocaleDateString()
+                              : "—"}
+                        </span>
+                     </div>
                      <p>
                         Valid till:{" "}
                         {new Date(
@@ -409,6 +417,7 @@ export default function UserSearchPage() {
                               <th className="p-2 text-left">Subscription</th>
                               <th className="p-2 text-left">Start Date</th>
                               <th className="p-2 text-left">End Date</th>
+                              <th className="p-2 text-left">Signup Date</th>
                            </tr>
                         </thead>
                         <tbody>
@@ -447,6 +456,11 @@ export default function UserSearchPage() {
                                           ).toLocaleDateString()
                                           : "—"}
                                     </td>
+                                    <td className="p-2">
+                                       {buyer.createdAt
+                                          ? new Date(buyer.createdAt).toLocaleDateString()
+                                          : "—"}
+                                    </td>
                                  </tr>
                               ))
                            ) : (
@@ -477,6 +491,7 @@ export default function UserSearchPage() {
                               <th className="p-2 text-left">Subscription</th>
                               <th className="p-2 text-left">Start Date</th>
                               <th className="p-2 text-left">End Date</th>
+                              <th className="p-2 text-left">Signup Date</th>
                            </tr>
                         </thead>
                         <tbody>
@@ -513,6 +528,11 @@ export default function UserSearchPage() {
                                           ? new Date(
                                              seller.subscription.endDate
                                           ).toLocaleDateString()
+                                          : "—"}
+                                    </td>
+                                    <td className="p-2">
+                                       {seller.createdAt
+                                          ? new Date(seller.createdAt).toLocaleDateString()
                                           : "—"}
                                     </td>
                                  </tr>

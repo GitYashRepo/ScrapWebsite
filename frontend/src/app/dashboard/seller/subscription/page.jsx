@@ -10,14 +10,11 @@ export default function SellerSubscriptionPage() {
    const { data: session } = useSession();
    const [loading, setLoading] = useState(false);
    const [loadingPlanId, setLoadingPlanId] = useState(null);
-   const [activeSub, setActiveSub] = useState(null);
-   const [checking, setChecking] = useState(true);
-   const [sellerInfo, setSellerInfo] = useState(null);
-
    const [couponInput, setCouponInput] = useState("");
    const [appliedCoupon, setAppliedCoupon] = useState(null);
    const [discountedPlans, setDiscountedPlans] = useState([]);
 
+   // Base subscription plans
    const basePlans = [
       { id: "seller_monthly", label: "1 Month", price: 2000 },
       { id: "seller_quarterly", label: "3 Months", price: 5000 },
@@ -29,44 +26,7 @@ export default function SellerSubscriptionPage() {
       setDiscountedPlans(basePlans);
    }, []);
 
-   useEffect(() => {
-      if (!session?.user?.id) return;
-      const fetchSellerInfo = async () => {
-         try {
-            const res = await fetch(`/api/seller/${session.user.id}`);
-            if (!res.ok) throw new Error("Failed to fetch seller details");
-            const data = await res.json();
-            setSellerInfo(data);
-         } catch (err) {
-            console.error("Error fetching seller info:", err);
-         }
-      };
-      fetchSellerInfo();
-   }, [session]);
-
-   useEffect(() => {
-      if (!session?.user?.id) return;
-      const checkSubscription = async () => {
-         try {
-            const res = await fetch("/api/subscription/check", {
-               method: "POST",
-               headers: { "Content-Type": "application/json" },
-               body: JSON.stringify({
-                  userId: session.user.id,
-                  userType: "Seller",
-               }),
-            });
-            const data = await res.json();
-            if (data.active) setActiveSub(data.subscription);
-         } catch (err) {
-            console.error("Error checking subscription:", err);
-         } finally {
-            setChecking(false);
-         }
-      };
-      checkSubscription();
-   }, [session]);
-
+   // Handle coupon
    const handleApplyCoupon = async () => {
       if (!couponInput.trim()) {
          toast.error("Please enter a coupon code!");
@@ -99,6 +59,7 @@ export default function SellerSubscriptionPage() {
       }
    };
 
+   // Handle payment and subscription
    const handleSubscribe = async (planId) => {
       if (!session?.user?.id) {
          toast.info("Please log in first.");
@@ -106,7 +67,8 @@ export default function SellerSubscriptionPage() {
       }
 
       setLoadingPlanId(planId);
-      // 3-Month Free Coupon flow
+
+      // Free coupon flow
       if (appliedCoupon?.type === "seller_free_3months") {
          try {
             const res = await fetch("/api/subscription/free", {
@@ -119,11 +81,13 @@ export default function SellerSubscriptionPage() {
                   couponCode: appliedCoupon.code,
                }),
             });
+
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || "Failed to activate subscription");
+
             toast.success("🎉 Free 3-Month Subscription Activated!");
             await signIn(undefined, { redirect: false });
-            window.location.href = "/dashboard/seller";
+            window.location.href = "/dashboard/seller"; // redirect after activation
          } catch (error) {
             toast.error(error.message);
          } finally {
@@ -132,7 +96,7 @@ export default function SellerSubscriptionPage() {
          return;
       }
 
-      // Normal payment flow
+      // Paid flow
       try {
          const res = await fetch("/api/subscription", {
             method: "POST",
@@ -148,13 +112,6 @@ export default function SellerSubscriptionPage() {
          const data = await res.json();
          if (!res.ok) {
             toast.error(data.error || "Subscription failed.");
-            return;
-         }
-
-         if (!data.order && data.subscription?.status === "active") {
-            toast.success("🎉 Free Subscription Activated via Coupon!");
-            await signIn(undefined, { redirect: false });
-            window.location.href = "/dashboard/seller";
             return;
          }
 
@@ -174,6 +131,7 @@ export default function SellerSubscriptionPage() {
                      couponCode: appliedCoupon?.code || null,
                   }),
                });
+
                const verifyData = await verifyRes.json();
                if (verifyRes.ok) {
                   toast.success("✅ Subscription Activated Successfully!");
@@ -201,90 +159,13 @@ export default function SellerSubscriptionPage() {
       }
    };
 
-   if (checking) {
-      return <div className="p-10 text-center text-gray-600">Checking subscription...</div>;
-   }
-
-   // ✅ Redesigned Active Subscription Layout
-   if (activeSub) {
-      return (
-         <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-50 via-white to-blue-100 p-6">
-            <div className="relative w-full max-w-4xl bg-white/90 backdrop-blur-xl border border-gray-200 rounded-3xl shadow-2xl overflow-hidden">
-               <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 flex items-center justify-between">
-                  <div>
-                     <h1 className="text-2xl font-bold tracking-wide">Seller Subscription Details</h1>
-                     <p className="text-blue-100 text-sm mt-1">Account Overview & Payment Summary</p>
-                  </div>
-                  <div className="bg-white/20 px-4 py-1.5 rounded-full text-sm font-semibold">
-                     {activeSub.status.toUpperCase()}
-                  </div>
-               </div>
-
-               <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Seller Info */}
-                  <div className="space-y-3">
-                     <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                        <span className="text-blue-600">🧾</span> Seller Information
-                     </h2>
-                     <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 space-y-2 text-gray-700 text-sm">
-                        <p><span className="font-semibold">Store Name:</span> {sellerInfo?.storeName}</p>
-                        <p><span className="font-semibold">Owner:</span> {sellerInfo?.ownerName}</p>
-                        <p><span className="font-semibold">Seller Code:</span> {sellerInfo?.sellerCode}</p>
-                        <p><span className="font-semibold">Email:</span> {sellerInfo?.email}</p>
-                        <p><span className="font-semibold">Phone:</span> {sellerInfo?.phone}</p>
-                        <p>
-                           <span className="font-semibold">Address:</span>{" "}
-                           {sellerInfo?.address}, {sellerInfo?.city}, {sellerInfo?.state} - {sellerInfo?.pinCode}
-                        </p>
-                     </div>
-                  </div>
-
-                  {/* Subscription Info */}
-                  <div className="space-y-3">
-                     <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                        <span className="text-green-600">💳</span> Subscription & Payment
-                     </h2>
-                     <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 space-y-2 text-gray-700 text-sm">
-                        <p><span className="font-semibold">Plan:</span> {activeSub.planName.replace("seller_", "").toUpperCase()}</p>
-                        <p><span className="font-semibold">Status:</span> <span className="text-green-500">"{activeSub.status}"</span></p>
-                        <p><span className="font-semibold">Start Date:</span> {new Date(activeSub.startDate).toLocaleDateString()}</p>
-                        <p><span className="font-semibold">End Date:</span> {new Date(activeSub.endDate).toLocaleDateString()}</p>
-                        {activeSub.amountPaid && (
-                           <p><span className="font-semibold">Amount Paid:</span> ₹{activeSub.amountPaid.toLocaleString()}</p>
-                        )}
-                        {activeSub.paymentId && (
-                           <p><span className="font-semibold">Payment ID:</span> {activeSub.paymentId}</p>
-                        )}
-                        {activeSub.couponCode && (
-                           <p><span className="font-semibold">Coupon Used:</span> {activeSub.couponCode}</p>
-                        )}
-                     </div>
-
-                     <a
-                        href={`/api/invoice/${activeSub._id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-block mt-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-2 rounded-full shadow-md text-sm font-medium transition-all"
-                     >
-                        🧾 Download Invoice (PDF)
-                     </a>
-                  </div>
-               </div>
-
-               <div className="bg-gray-100 border-t px-6 py-3 text-sm text-gray-500 text-center">
-                  You can renew or upgrade your plan after this subscription ends.
-               </div>
-            </div>
-         </div>
-      );
-   }
-
-   // Plans UI (unchanged)
    return (
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white p-10">
          <Script src="https://checkout.razorpay.com/v1/checkout.js" />
          <div className="text-center mb-10">
-            <h1 className="text-4xl font-bold text-blue-700 mb-3">Choose Your Seller Subscription Plan</h1>
+            <h1 className="text-4xl font-bold text-blue-700 mb-3">
+               Choose Your Seller Subscription Plan
+            </h1>
             <p className="text-gray-600 max-w-2xl mx-auto">
                Select a plan that suits your business needs. Each plan gives you full access to our seller tools and dedicated support.
             </p>
@@ -305,7 +186,6 @@ export default function SellerSubscriptionPage() {
                   )}
                   <div className="p-6 flex flex-col h-full">
                      <h2 className="text-2xl font-semibold text-blue-700 mb-2">{plan.label}</h2>
-                     <p className="text-gray-600 mb-6 text-sm">{plan.description}</p>
                      <p className="text-4xl font-bold text-gray-800 mb-4">
                         ₹{plan.price.toLocaleString()}
                         {appliedCoupon?.type === "seller_discount" && (
