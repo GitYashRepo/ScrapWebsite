@@ -13,7 +13,9 @@ export default function UserSearchPage() {
    const [users, setUsers] = useState({ buyers: [], sellers: [] });
    const [fetchingUsers, setFetchingUsers] = useState(true);
    const [showUnsubscribedFirst, setShowUnsubscribedFirst] = useState(false);
-   const [filterText, setFilterText] = useState(""); // 🔍 filter input text
+   const [filterText, setFilterText] = useState("");
+   const [selectedMonth, setSelectedMonth] = useState("");
+   const [selectedYear, setSelectedYear] = useState("");
 
    // 🧩 Fetch all buyers & sellers on load
    useEffect(() => {
@@ -83,7 +85,7 @@ export default function UserSearchPage() {
       });
    };
 
-   // 🧩 Filter logic (case-insensitive)
+   // 🔍 Filter by text
    const filterList = (list) => {
       if (!filterText.trim()) return list;
       const text = filterText.toLowerCase();
@@ -96,16 +98,37 @@ export default function UserSearchPage() {
       );
    };
 
-   // 🧠 Derived lists (sorted + filtered)
-   const buyersToShow = useMemo(
-      () => filterList(sortUsers(users.buyers)),
-      [users, showUnsubscribedFirst, filterText]
-   );
+   // 🗓️ Filter users by selected month & year for both subscribed & unsubscribed users
+   const filterByMonthYear = (list) => {
+      if (!selectedMonth && !selectedYear) return list;
 
-   const sellersToShow = useMemo(
-      () => filterList(sortUsers(users.sellers)),
-      [users, showUnsubscribedFirst, filterText]
-   );
+      const filtered = list.filter((user) => {
+         // Subscription date (if subscribed)
+         const subDateStr = user.subscription?.startDate;
+         // Signup date (fallback for unsubscribed users)
+         const signupDateStr = user.createdAt || user.signupDate;
+
+         const dateStr = subDateStr || signupDateStr;
+         if (!dateStr) return false;
+
+         const date = new Date(dateStr);
+         const matchesMonth = selectedMonth
+            ? date.getMonth() + 1 === Number(selectedMonth)
+            : true;
+         const matchesYear = selectedYear
+            ? date.getFullYear() === Number(selectedYear)
+            : true;
+
+         return matchesMonth && matchesYear;
+      });
+
+      // Sort: subscribed users first, unsubscribed last
+      return filtered.sort((a, b) => {
+         const aSub = !!a.subscription;
+         const bSub = !!b.subscription;
+         return aSub === bSub ? 0 : aSub ? -1 : 1;
+      });
+   };
 
    // 🧩 Compute expiring soon users (within 10 days)
    const expiringSoonUsers = useMemo(() => {
@@ -130,6 +153,21 @@ export default function UserSearchPage() {
 
       return { buyersExpiring, sellersExpiring };
    }, [users]);
+
+   // 🧠 Derived lists (sorted + filtered + month/year)
+   const buyersToShow = useMemo(() => {
+      let result = sortUsers(users.buyers);
+      result = filterList(result);
+      result = filterByMonthYear(result);
+      return result;
+   }, [users, showUnsubscribedFirst, filterText, selectedMonth, selectedYear]);
+
+   const sellersToShow = useMemo(() => {
+      let result = sortUsers(users.sellers);
+      result = filterList(result);
+      result = filterByMonthYear(result);
+      return result;
+   }, [users, showUnsubscribedFirst, filterText, selectedMonth, selectedYear]);
 
 
    return (
@@ -174,7 +212,9 @@ export default function UserSearchPage() {
                      <p>Status: {data.subscription.status}</p>
                      <p>
                         Valid till:{" "}
-                        {new Date(data.subscription.endDate).toLocaleDateString()}
+                        {new Date(
+                           data.subscription.endDate
+                        ).toLocaleDateString()}
                      </p>
                   </div>
                ) : (
@@ -186,7 +226,9 @@ export default function UserSearchPage() {
                      variant={data.user.isSuspended ? "secondary" : "destructive"}
                      onClick={toggleSuspend}
                   >
-                     {data.user.isSuspended ? "Unsuspend Account" : "Suspend Account"}
+                     {data.user.isSuspended
+                        ? "Unsuspend Account"
+                        : "Suspend Account"}
                   </Button>
                </div>
             </div>
@@ -222,9 +264,13 @@ export default function UserSearchPage() {
                                     <td className="p-2">{b.email}</td>
                                     <td className="p-2">{b.phone}</td>
                                     <td className="p-2">{b.buyerCode}</td>
-                                    <td className="p-2">{b.subscription?.planName || "—"}</td>
+                                    <td className="p-2">
+                                       {b.subscription?.planName || "—"}
+                                    </td>
                                     <td className="p-2 text-red-600 font-semibold">
-                                       {new Date(b.subscription.endDate).toLocaleDateString()}
+                                       {new Date(
+                                          b.subscription.endDate
+                                       ).toLocaleDateString()}
                                     </td>
                                  </tr>
                               ))}
@@ -255,9 +301,13 @@ export default function UserSearchPage() {
                                     <td className="p-2">{s.email}</td>
                                     <td className="p-2">{s.phone}</td>
                                     <td className="p-2">{s.sellerCode}</td>
-                                    <td className="p-2">{s.subscription?.planName || "—"}</td>
+                                    <td className="p-2">
+                                       {s.subscription?.planName || "—"}
+                                    </td>
                                     <td className="p-2 text-red-600 font-semibold">
-                                       {new Date(s.subscription.endDate).toLocaleDateString()}
+                                       {new Date(
+                                          s.subscription.endDate
+                                       ).toLocaleDateString()}
                                     </td>
                                  </tr>
                               ))}
@@ -268,13 +318,12 @@ export default function UserSearchPage() {
                </div>
             )}
 
-
          {/* 🧾 Buyer & Seller Lists */}
          <div className="mt-10 space-y-8">
             <div className="flex flex-wrap justify-between items-center gap-4">
                <h2 className="text-2xl font-semibold">👥 All Users Overview</h2>
 
-               <div className="flex items-center gap-4">
+               <div className="flex items-center flex-wrap gap-4">
                   <label className="flex items-center gap-2 text-sm">
                      <input
                         type="checkbox"
@@ -284,17 +333,64 @@ export default function UserSearchPage() {
                      Show unsubscribed users on top
                   </label>
 
+                  {/* 📅 Month Selector */}
+                  <select
+                     value={selectedMonth}
+                     onChange={(e) => setSelectedMonth(e.target.value)}
+                     className="border rounded-md p-2 text-sm"
+                  >
+                     <option value="">All Months</option>
+                     {Array.from({ length: 12 }, (_, i) => (
+                        <option key={i + 1} value={i + 1}>
+                           {new Date(0, i).toLocaleString("default", {
+                              month: "long",
+                           })}
+                        </option>
+                     ))}
+                  </select>
+
+                  {/* 📆 Year Selector */}
+                  <select
+                     value={selectedYear}
+                     onChange={(e) => setSelectedYear(e.target.value)}
+                     className="border rounded-md p-2 text-sm"
+                  >
+                     <option value="">All Years</option>
+                     {Array.from({ length: 6 }, (_, i) => {
+                        const year = new Date().getFullYear() - i;
+                        return (
+                           <option key={year} value={year}>
+                              {year}
+                           </option>
+                        );
+                     })}
+                  </select>
+
                   <Input
                      placeholder="Filter by name, email, or phone..."
                      value={filterText}
                      onChange={(e) => setFilterText(e.target.value)}
                      className="w-64"
                   />
+
+                  {/* 🧹 Clear Filters Button */}
+                  <Button
+                     variant="outline"
+                     onClick={() => {
+                        setSelectedMonth("");
+                        setSelectedYear("");
+                        setFilterText("");
+                        setShowUnsubscribedFirst(false);
+                     }}
+                     className="text-sm"
+                  >
+                     Clear Filters
+                  </Button>
                </div>
             </div>
 
             {fetchingUsers ? (
-               <div className="fllex items-center justify-center">
+               <div className="flex items-center justify-center">
                   <Spinner />
                </div>
             ) : (
@@ -339,19 +435,26 @@ export default function UserSearchPage() {
                                     </td>
                                     <td className="p-2">
                                        {buyer.subscription?.startDate
-                                          ? new Date(buyer.subscription.startDate).toLocaleDateString()
+                                          ? new Date(
+                                             buyer.subscription.startDate
+                                          ).toLocaleDateString()
                                           : "—"}
                                     </td>
                                     <td className="p-2">
                                        {buyer.subscription?.endDate
-                                          ? new Date(buyer.subscription.endDate).toLocaleDateString()
+                                          ? new Date(
+                                             buyer.subscription.endDate
+                                          ).toLocaleDateString()
                                           : "—"}
                                     </td>
                                  </tr>
                               ))
                            ) : (
                               <tr>
-                                 <td colSpan="5" className="text-center p-3 text-gray-500">
+                                 <td
+                                    colSpan="8"
+                                    className="text-center p-3 text-gray-500"
+                                 >
                                     No buyers found
                                  </td>
                               </tr>
@@ -366,7 +469,6 @@ export default function UserSearchPage() {
                      <table className="w-full border border-gray-200 text-sm">
                         <thead className="bg-gray-100">
                            <tr>
-                              {/* <th className="p-2 text-left">Store</th> */}
                               <th className="p-2 text-left">Seller Name</th>
                               <th className="p-2 text-left">Email</th>
                               <th className="p-2 text-left">Phone</th>
@@ -385,7 +487,6 @@ export default function UserSearchPage() {
                                     className={`border-t ${!seller.subscription ? "bg-red-50" : ""
                                        }`}
                                  >
-                                    {/* <td className="p-2">{seller.storeName}</td> */}
                                     <td className="p-2">{seller.ownerName}</td>
                                     <td className="p-2">{seller.email}</td>
                                     <td className="p-2">{seller.phone}</td>
@@ -402,19 +503,26 @@ export default function UserSearchPage() {
                                     </td>
                                     <td className="p-2">
                                        {seller.subscription?.startDate
-                                          ? new Date(seller.subscription.startDate).toLocaleDateString()
+                                          ? new Date(
+                                             seller.subscription.startDate
+                                          ).toLocaleDateString()
                                           : "—"}
                                     </td>
                                     <td className="p-2">
                                        {seller.subscription?.endDate
-                                          ? new Date(seller.subscription.endDate).toLocaleDateString()
+                                          ? new Date(
+                                             seller.subscription.endDate
+                                          ).toLocaleDateString()
                                           : "—"}
                                     </td>
                                  </tr>
                               ))
                            ) : (
                               <tr>
-                                 <td colSpan="6" className="text-center p-3 text-gray-500">
+                                 <td
+                                    colSpan="8"
+                                    className="text-center p-3 text-gray-500"
+                                 >
                                     No sellers found
                                  </td>
                               </tr>
