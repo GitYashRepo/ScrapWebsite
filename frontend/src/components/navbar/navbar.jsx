@@ -175,24 +175,24 @@ export function Navbar() {
 
          const menuItems = {
             buyer: [
-               { label: "Dashboard", href: `/dashboard/buyer` },
-               { label: "Enquiries", href: `/dashboard/buyer/enquiries` },
                { label: "Run Ads", href: `/dashboard/ads` },
+               { label: "Enquiries", href: `/dashboard/buyer/enquiries` },
+               { label: "Dashboard", href: `/dashboard/buyer` },
                { label: "Change Password", href: `/dashboard/common/change-password` },
             ],
             seller: [
-               { label: "Dashboard", href: `/dashboard/seller` },
                { label: "Chats", href: `/dashboard/seller/chat` },
-               { label: "Active Subscription", href: `/dashboard/seller/subscription` },
                { label: "Run Ads", href: `/dashboard/ads` },
+               { label: "Dashboard", href: `/dashboard/seller` },
+               { label: "My Products", href: `/dashboard/seller/my-products` },
                { label: "Change Password", href: `/dashboard/common/change-password` },
             ],
             admin: [
-               { label: "Dashboard", href: `/dashboard/admin` },
-               { label: "Manage Categories", href: `/dashboard/admin/categories` },
                { label: "Stats", href: `/dashboard/admin/stats` },
+               { label: "Dashboard", href: `/dashboard/admin` },
+               { label: "User-Search", href: `/dashboard/admin/user-search` },
                { label: "Create Coupon", href: `/dashboard/admin/coupons` },
-               { label: "Suspend / Undo", href: `/dashboard/admin/user-search` },
+               { label: "Manage Categories", href: `/dashboard/admin/categories` },
                { label: "Generate Password", href: `/dashboard/admin/reset-password` },
             ],
          };
