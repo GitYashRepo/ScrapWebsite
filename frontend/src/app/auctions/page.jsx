@@ -1,3 +1,5 @@
+"use client";
+
 
 import SkeletonCard from "@/components/Loader/skeletoncard/skeleton";
 import { useSession } from "next-auth/react";
@@ -5,44 +7,6 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-
-// ✅ SEO Metadata
-export const metadata = {
-   title: "Scrap Auctions | Live Bidding & Marketplace | Kabaad Mandi",
-   description:
-      "Join live scrap auctions on Kabaad Mandi. Bid on verified metal, plastic, and e-waste lots from trusted sellers across India. Transparent pricing and secure buyer–seller interactions.",
-   keywords: [
-      "scrap auctions",
-      "live scrap bidding",
-      "online scrap auction",
-      "Kabaad Mandi auctions",
-      "metal auction",
-      "plastic scrap auction",
-      "industrial scrap auction",
-      "e-waste auction India",
-      "recycling marketplace",
-   ],
-   openGraph: {
-      title: "Scrap Auctions | Kabaad Mandi - India's #1 Recycling Auction Platform",
-      description:
-         "Bid and win scrap materials from verified sellers at live online auctions. Transparent pricing, verified listings, and nationwide access.",
-      url: "https://www.kabaadmandi.com/auction",
-      siteName: "Kabaad Mandi",
-      images: [
-         {
-            url: "https://www.kabaadmandi.com/og-auction.jpg", // replace with your auction banner
-            width: 1200,
-            height: 630,
-            alt: "Kabaad Mandi Auction Marketplace",
-         },
-      ],
-      locale: "en_IN",
-      type: "website",
-   },
-   alternates: {
-      canonical: "https://www.kabaadmandi.com/auction",
-   },
-};
 
 const AuctionProductsPage = () => {
    const { id } = useParams();

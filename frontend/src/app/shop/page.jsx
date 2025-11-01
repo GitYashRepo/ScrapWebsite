@@ -1,3 +1,5 @@
+"use client";
+
 import SkeletonCard from "@/components/Loader/skeletoncard/skeleton";
 import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
@@ -17,46 +19,6 @@ import {
    TooltipContent,
    TooltipProvider,
 } from "@/components/ui/tooltip";
-
-
-// ✅ SEO metadata for the Shop Page
-export const metadata = {
-   title: "Shop Scrap Online | Buy Metal, Plastic, and E-Waste | Kabaad Mandi",
-   description:
-      "Explore and buy verified scrap materials online at Kabaad Mandi. Browse categories like metal, plastic, e-waste, and more — transparent pricing and trusted sellers across India.",
-   keywords: [
-      "Kabaad Mandi",
-      "scrap marketplace",
-      "buy scrap online",
-      "sell scrap online",
-      "metal scrap",
-      "plastic scrap",
-      "e-waste recycling",
-      "scrap dealers India",
-      "industrial waste",
-      "scrap price per kg",
-   ],
-   openGraph: {
-      title: "Shop Scrap Online | Buy Verified Scrap Materials | Kabaad Mandi",
-      description:
-         "Discover a wide range of scrap materials from verified sellers at Kabaad Mandi — India's trusted online scrap marketplace.",
-      url: "https://www.kabaadmandi.com/shop",
-      siteName: "Kabaad Mandi",
-      images: [
-         {
-            url: "https://www.kabaadmandi.com/og-shop.jpg", // replace if you have a shop banner
-            width: 1200,
-            height: 630,
-            alt: "Kabaad Mandi Shop Page - Scrap Marketplace",
-         },
-      ],
-      locale: "en_IN",
-      type: "website",
-   },
-   alternates: {
-      canonical: "https://www.kabaadmandi.com/shop",
-   },
-};
 
 
 const ShopPage = () => {

@@ -1,24 +1,6 @@
+"use client";
+
 import { Shield } from "lucide-react";
-
-
-export const metadata = {
-   title: "Privacy Policy | Kabaad Mandi",
-   description:
-      "Read Kabaad Mandi’s privacy policy to understand how we collect, use, and protect your personal information during scrap trading and subscription purchases.",
-   keywords: [
-      "privacy policy",
-      "Kabaad Mandi privacy",
-      "data protection",
-      "scrap marketplace",
-      "Razorpay security",
-   ],
-   openGraph: {
-      title: "Privacy Policy | Kabaad Mandi",
-      description:
-         "Learn how Kabaad Mandi ensures your data privacy and secure transactions through trusted payment processing.",
-      url: "https://www.kabaadmandi.com/privacy-policy",
-   },
-};
 
 export default function PrivacyPolicy() {
    return (
