@@ -1,6 +1,24 @@
-"use client";
-
 import { Ban } from "lucide-react";
+
+
+export const metadata = {
+   title: "Refund & Cancellation Policy | Kabaad Mandi",
+   description:
+      "Learn about Kabaad Mandi’s refund and cancellation policy for subscriptions and payments processed through Razorpay.",
+   keywords: [
+      "refund policy",
+      "cancellation policy",
+      "subscription refund",
+      "Kabaad Mandi",
+      "Razorpay payments",
+   ],
+   openGraph: {
+      title: "Refund & Cancellation Policy | Kabaad Mandi",
+      description:
+         "Read about Kabaad Mandi’s refund and cancellation policy for all subscriptions and payment-related issues.",
+      url: "https://www.kabaadmandi.com/refund-and-cancellation",
+   },
+};
 
 export default function RefundAndCancellation() {
    return (
