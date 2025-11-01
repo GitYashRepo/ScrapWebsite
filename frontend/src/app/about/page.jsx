@@ -1,6 +1,42 @@
-"use client";
+
 
 import { ShieldCheck, Zap, Recycle, Users } from "lucide-react";
+
+// ✅ SEO metadata for this page
+export const metadata = {
+   title: "About Kabaad Mandi | Scrap Marketplace for Buyers & Sellers",
+   description:
+      "Learn more about Kabaad Mandi — India's trusted platform connecting scrap buyers and sellers for transparent, efficient, and sustainable scrap trading.",
+   keywords: [
+      "Kabaad Mandi",
+      "scrap trading platform",
+      "sell scrap online",
+      "buy scrap",
+      "industrial scrap marketplace",
+      "recycling India",
+      "scrap buyers and sellers",
+   ],
+   openGraph: {
+      title: "About Kabaad Mandi | Transforming Scrap into Value",
+      description:
+         "Kabaad Mandi connects scrap sellers and buyers with a transparent, secure, and eco-friendly online marketplace.",
+      url: "https://www.kabaadmandi.com/about",
+      siteName: "Kabaad Mandi",
+      images: [
+         {
+            url: "https://www.kabaadmandi.com/og-image.jpg",
+            width: 1200,
+            height: 630,
+            alt: "Kabaad Mandi - Scrap Marketplace",
+         },
+      ],
+      locale: "en_IN",
+      type: "website",
+   },
+   alternates: {
+      canonical: "https://www.kabaadmandi.com/about",
+   },
+};
 
 export default function AboutUsPage() {
    return (

@@ -1,6 +1,24 @@
-"use client";
-
 import { FileText } from "lucide-react";
+
+
+export const metadata = {
+   title: "Terms & Conditions | Kabaad Mandi",
+   description:
+      "Read the terms and conditions for using Kabaad Mandi. Understand our policies on user accounts, platform usage, payments, and liability.",
+   keywords: [
+      "terms and conditions",
+      "Kabaad Mandi",
+      "scrap marketplace",
+      "buyer seller policy",
+      "Razorpay payment terms",
+   ],
+   openGraph: {
+      title: "Terms & Conditions | Kabaad Mandi",
+      description:
+         "Understand the rules and conditions for using Kabaad Mandi's scrap trading platform, including payment and refund policies.",
+      url: "https://www.kabaadmandi.com/terms-and-conditions",
+   },
+};
 
 export default function TermsAndConditions() {
    return (

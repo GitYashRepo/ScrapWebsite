@@ -3,6 +3,45 @@
 import Carousel from "@/components/carousel/carousel";
 import { Recycle, Factory, Truck, Users, Star, ShieldCheck } from "lucide-react";
 
+// ✅ SEO metadata for the homepage
+export const metadata = {
+   title: "Kabaad Mandi | India's Trusted Online Scrap Marketplace",
+   description:
+      "Buy, sell, and bid on scrap materials online at Kabaad Mandi — a transparent, secure, and eco-friendly marketplace connecting scrap buyers and sellers across India.",
+   keywords: [
+      "Kabaad Mandi",
+      "scrap marketplace",
+      "sell scrap online",
+      "buy scrap online",
+      "industrial scrap",
+      "scrap buyers and sellers",
+      "metal scrap",
+      "plastic scrap",
+      "e-waste recycling",
+      "circular economy",
+   ],
+   openGraph: {
+      title: "Kabaad Mandi | Transforming Scrap into Value",
+      description:
+         "Kabaad Mandi is India's digital scrap trading platform — empowering industries with transparent, efficient, and sustainable scrap trading.",
+      url: "https://www.kabaadmandi.com/",
+      siteName: "Kabaad Mandi",
+      images: [
+         {
+            url: "https://www.kabaadmandi.com/og-image.jpg", // Replace with your actual image URL
+            width: 1200,
+            height: 630,
+            alt: "Kabaad Mandi - Scrap Marketplace",
+         },
+      ],
+      locale: "en_IN",
+      type: "website",
+   },
+   alternates: {
+      canonical: "https://www.kabaadmandi.com/",
+   },
+};
+
 export default function Home() {
    const slides = [
       {
