@@ -1,5 +1,6 @@
 "use client";
 
+import Spinner from "@/components/Loader/spinner/spinner";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -134,9 +135,8 @@ export default function AdminCouponsPage() {
             <button
                onClick={handleCreate}
                disabled={loading}
-               className={`w-full ${
-                  loading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
-               } text-white py-2 rounded-lg transition`}
+               className={`w-full ${loading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
+                  } text-white py-2 rounded-lg transition`}
             >
                {loading ? "Creating..." : "Create Coupon"}
             </button>
@@ -159,7 +159,9 @@ export default function AdminCouponsPage() {
                   {coupons.length === 0 ? (
                      <tr>
                         <td colSpan="5" className="text-center py-4 text-gray-500">
-                           No coupons found
+                           <div className="fllex items-center justify-center">
+                              <Spinner />
+                           </div>
                         </td>
                      </tr>
                   ) : (

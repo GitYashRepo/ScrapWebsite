@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import UserStatsChart from "../UserStatsChart";
 import SubscriptionStatsChart from "../SubscriptionStatsChart";
+import Spinner from "@/components/Loader/spinner/spinner";
 
 const SubscriptionPage = () => {
    const [stats, setStats] = useState(null);
@@ -17,7 +18,13 @@ const SubscriptionPage = () => {
          .then(data => setSubs(data));
    }, []);
 
-   if (!stats) return <div className="p-6">Loading...</div>;
+   if (!stats) {
+      return (
+         <div className="fllex items-center justify-center">
+            <Spinner />
+         </div>
+      )
+   }
 
    return (
       <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">

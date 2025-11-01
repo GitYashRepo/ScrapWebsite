@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import Spinner from "@/components/Loader/spinner/spinner";
 
 export default function UserSearchPage() {
    const [code, setCode] = useState("");
@@ -106,6 +107,31 @@ export default function UserSearchPage() {
       [users, showUnsubscribedFirst, filterText]
    );
 
+   // 🧩 Compute expiring soon users (within 10 days)
+   const expiringSoonUsers = useMemo(() => {
+      const now = new Date();
+      const tenDaysLater = new Date();
+      tenDaysLater.setDate(now.getDate() + 10);
+
+      const isExpiringSoon = (user) => {
+         const endDate = user.subscription?.endDate
+            ? new Date(user.subscription.endDate)
+            : null;
+         return (
+            endDate &&
+            endDate >= now &&
+            endDate <= tenDaysLater &&
+            user.subscription?.status === "active"
+         );
+      };
+
+      const buyersExpiring = users.buyers.filter(isExpiringSoon);
+      const sellersExpiring = users.sellers.filter(isExpiringSoon);
+
+      return { buyersExpiring, sellersExpiring };
+   }, [users]);
+
+
    return (
       <div className="p-6 space-y-8">
          <h2 className="text-2xl font-semibold">🔍 Search User by Code</h2>
@@ -166,6 +192,83 @@ export default function UserSearchPage() {
             </div>
          )}
 
+         {/* ⚠️ Expiring Soon Section */}
+         {(expiringSoonUsers.buyersExpiring.length > 0 ||
+            expiringSoonUsers.sellersExpiring.length > 0) && (
+               <div className="border border-yellow-300 bg-yellow-50 p-4 rounded-xl shadow-sm">
+                  <h3 className="text-xl font-semibold text-yellow-700 mb-3">
+                     ⚠️ Subscriptions Expiring Within 10 Days
+                  </h3>
+
+                  {/* Buyers Expiring */}
+                  {expiringSoonUsers.buyersExpiring.length > 0 && (
+                     <div className="mb-4">
+                        <h4 className="font-medium text-yellow-800 mb-2">🛒 Buyers</h4>
+                        <table className="w-full border border-gray-200 text-sm">
+                           <thead className="bg-yellow-100">
+                              <tr>
+                                 <th className="p-2 text-left">Name</th>
+                                 <th className="p-2 text-left">Email</th>
+                                 <th className="p-2 text-left">Phone</th>
+                                 <th className="p-2 text-left">Buyer Code</th>
+                                 <th className="p-2 text-left">Plan</th>
+                                 <th className="p-2 text-left">End Date</th>
+                              </tr>
+                           </thead>
+                           <tbody>
+                              {expiringSoonUsers.buyersExpiring.map((b) => (
+                                 <tr key={b._id} className="border-t">
+                                    <td className="p-2">{b.name}</td>
+                                    <td className="p-2">{b.email}</td>
+                                    <td className="p-2">{b.phone}</td>
+                                    <td className="p-2">{b.buyerCode}</td>
+                                    <td className="p-2">{b.subscription?.planName || "—"}</td>
+                                    <td className="p-2 text-red-600 font-semibold">
+                                       {new Date(b.subscription.endDate).toLocaleDateString()}
+                                    </td>
+                                 </tr>
+                              ))}
+                           </tbody>
+                        </table>
+                     </div>
+                  )}
+
+                  {/* Sellers Expiring */}
+                  {expiringSoonUsers.sellersExpiring.length > 0 && (
+                     <div>
+                        <h4 className="font-medium text-yellow-800 mb-2">🏬 Sellers</h4>
+                        <table className="w-full border border-gray-200 text-sm">
+                           <thead className="bg-yellow-100">
+                              <tr>
+                                 <th className="p-2 text-left">Name</th>
+                                 <th className="p-2 text-left">Email</th>
+                                 <th className="p-2 text-left">Phone</th>
+                                 <th className="p-2 text-left">Seller Code</th>
+                                 <th className="p-2 text-left">Plan</th>
+                                 <th className="p-2 text-left">End Date</th>
+                              </tr>
+                           </thead>
+                           <tbody>
+                              {expiringSoonUsers.sellersExpiring.map((s) => (
+                                 <tr key={s._id} className="border-t">
+                                    <td className="p-2">{s.ownerName}</td>
+                                    <td className="p-2">{s.email}</td>
+                                    <td className="p-2">{s.phone}</td>
+                                    <td className="p-2">{s.sellerCode}</td>
+                                    <td className="p-2">{s.subscription?.planName || "—"}</td>
+                                    <td className="p-2 text-red-600 font-semibold">
+                                       {new Date(s.subscription.endDate).toLocaleDateString()}
+                                    </td>
+                                 </tr>
+                              ))}
+                           </tbody>
+                        </table>
+                     </div>
+                  )}
+               </div>
+            )}
+
+
          {/* 🧾 Buyer & Seller Lists */}
          <div className="mt-10 space-y-8">
             <div className="flex flex-wrap justify-between items-center gap-4">
@@ -191,7 +294,9 @@ export default function UserSearchPage() {
             </div>
 
             {fetchingUsers ? (
-               <p>Loading users...</p>
+               <div className="fllex items-center justify-center">
+                  <Spinner />
+               </div>
             ) : (
                <>
                   {/* Buyers */}
@@ -200,11 +305,14 @@ export default function UserSearchPage() {
                      <table className="w-full border border-gray-200 text-sm">
                         <thead className="bg-gray-100">
                            <tr>
-                              <th className="p-2 text-left">Name</th>
+                              <th className="p-2 text-left">Buyer Name</th>
                               <th className="p-2 text-left">Email</th>
                               <th className="p-2 text-left">Phone</th>
-                              <th className="p-2 text-left">Code</th>
+                              <th className="p-2 text-left">Buyer Code</th>
+                              <th className="p-2 text-left">Price</th>
                               <th className="p-2 text-left">Subscription</th>
+                              <th className="p-2 text-left">Start Date</th>
+                              <th className="p-2 text-left">End Date</th>
                            </tr>
                         </thead>
                         <tbody>
@@ -220,9 +328,24 @@ export default function UserSearchPage() {
                                     <td className="p-2">{buyer.phone}</td>
                                     <td className="p-2">{buyer.buyerCode}</td>
                                     <td className="p-2">
+                                       {buyer.subscription
+                                          ? `₹${buyer.subscription.amount || 0}`
+                                          : "—"}
+                                    </td>
+                                    <td className="p-2">
                                        {buyer.subscription?.status === "active"
                                           ? "✅ Active"
                                           : "❌ None"}
+                                    </td>
+                                    <td className="p-2">
+                                       {buyer.subscription?.startDate
+                                          ? new Date(buyer.subscription.startDate).toLocaleDateString()
+                                          : "—"}
+                                    </td>
+                                    <td className="p-2">
+                                       {buyer.subscription?.endDate
+                                          ? new Date(buyer.subscription.endDate).toLocaleDateString()
+                                          : "—"}
                                     </td>
                                  </tr>
                               ))
@@ -243,12 +366,15 @@ export default function UserSearchPage() {
                      <table className="w-full border border-gray-200 text-sm">
                         <thead className="bg-gray-100">
                            <tr>
-                              <th className="p-2 text-left">Store</th>
-                              <th className="p-2 text-left">Owner</th>
+                              {/* <th className="p-2 text-left">Store</th> */}
+                              <th className="p-2 text-left">Seller Name</th>
                               <th className="p-2 text-left">Email</th>
                               <th className="p-2 text-left">Phone</th>
-                              <th className="p-2 text-left">Code</th>
+                              <th className="p-2 text-left">Seller Code</th>
+                              <th className="p-2 text-left">Price</th>
                               <th className="p-2 text-left">Subscription</th>
+                              <th className="p-2 text-left">Start Date</th>
+                              <th className="p-2 text-left">End Date</th>
                            </tr>
                         </thead>
                         <tbody>
@@ -259,15 +385,30 @@ export default function UserSearchPage() {
                                     className={`border-t ${!seller.subscription ? "bg-red-50" : ""
                                        }`}
                                  >
-                                    <td className="p-2">{seller.storeName}</td>
+                                    {/* <td className="p-2">{seller.storeName}</td> */}
                                     <td className="p-2">{seller.ownerName}</td>
                                     <td className="p-2">{seller.email}</td>
                                     <td className="p-2">{seller.phone}</td>
                                     <td className="p-2">{seller.sellerCode}</td>
                                     <td className="p-2">
+                                       {seller.subscription
+                                          ? `₹${seller.subscription.amount || 0}`
+                                          : "—"}
+                                    </td>
+                                    <td className="p-2">
                                        {seller.subscription?.status === "active"
                                           ? "✅ Active"
                                           : "❌ None"}
+                                    </td>
+                                    <td className="p-2">
+                                       {seller.subscription?.startDate
+                                          ? new Date(seller.subscription.startDate).toLocaleDateString()
+                                          : "—"}
+                                    </td>
+                                    <td className="p-2">
+                                       {seller.subscription?.endDate
+                                          ? new Date(seller.subscription.endDate).toLocaleDateString()
+                                          : "—"}
                                     </td>
                                  </tr>
                               ))

@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import ChatsTable from "./ChatsTable";
+import Spinner from "@/components/Loader/spinner/spinner";
 
 const AdminDashboard = () => {
    const [stats, setStats] = useState(null);
@@ -15,7 +16,13 @@ const AdminDashboard = () => {
          .then(setChats);
    }, []);
 
-   if (!stats) return <div className="p-6">Loading Admin Dashboard...</div>;
+   if (!stats) {
+      return (
+         <div className="fllex items-center justify-center">
+            <Spinner />
+         </div>
+      )
+   }
 
    return (
       <div className="p-6 max-w-7xl mx-auto space-y-10">
