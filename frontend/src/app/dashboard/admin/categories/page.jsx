@@ -1,5 +1,6 @@
 "use client";
 
+import Spinner from "@/components/Loader/spinner/spinner";
 import { useEffect, useState } from "react";
 import { toast } from "sonner"
 
@@ -125,7 +126,9 @@ export default function AdminCategoriesPage() {
          <div>
             <h2 className="text-lg font-semibold mb-3">Existing Categories</h2>
             {categories.length === 0 ? (
-               <p className="text-gray-600">No categories found.</p>
+               <div className="fllex items-center justify-center">
+                  <Spinner />
+               </div>
             ) : (
                <div className="grid md:grid-cols-3 gap-5">
                   {categories.map((cat) => (

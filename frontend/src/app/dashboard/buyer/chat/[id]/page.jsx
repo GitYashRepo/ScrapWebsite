@@ -239,7 +239,11 @@ export default function BuyerChatPage() {
    };
 
    if (status === "loading" || !product) {
-      return <div className="p-6 text-gray-500">Loading chat...</div>;
+      return (
+         <div className="fllex items-center justify-center">
+            <Spinner />
+         </div>
+      )
    }
 
    return (
