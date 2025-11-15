@@ -119,7 +119,7 @@ export default function SellerSubscriptionPage() {
             key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
             amount: data.order.amount,
             currency: data.order.currency,
-            name: "KabaadiMandi Seller Subscription",
+            name: "KabaadMandi Seller Subscription",
             description: `Subscription Plan - ${planId}`,
             order_id: data.order.id,
             handler: async (response) => {

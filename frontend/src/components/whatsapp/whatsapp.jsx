@@ -4,7 +4,7 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 
-export default function WhatsAppWidget({ brandName = "KabaadiMandi", phone = '+918003316534' }) {
+export default function WhatsAppWidget({ brandName = "KabaadMandi", phone = '+918003316534' }) {
    const [open, setOpen] = React.useState(false)
    const [message, setMessage] = React.useState(
       `Hello ${brandName} Team, I’m interested in your scrap metal marketplace. Could you please share details on how to buy and sell materials on your platform. Thank you.`,

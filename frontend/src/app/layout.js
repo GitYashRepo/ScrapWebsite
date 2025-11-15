@@ -38,7 +38,7 @@ export default function RootLayout({ children }) {
             <AdDisplayModal />
             <AdTicker />
                {children}
-            <WhatsAppWidget brandName="KabaadiMandi" phone = '+918003316534' />
+            <WhatsAppWidget brandName="KabaadMandi" phone = '+918003316534' />
             <Footer />
             <Toaster
                position="top-center"
