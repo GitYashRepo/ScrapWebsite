@@ -71,7 +71,7 @@ export default function AboutUsPage() {
                <li><strong>Sellers</strong> can list their scrap for direct sale or create auctions where buyers bid.</li>
                <li><strong>Buyers</strong> can buy directly or participate in live auctions to get the best deals.</li>
                <li>For Purchasing Any Scrap Product <strong>Buyers</strong> can directly Chat with Seller's on the platform Itself can share pickup and drop location and payment process !! </li>
-               <li className="text-red-500"><strong>Note:</strong> We are not invoved in the Buying and Selling process of the Scrap Material , You can directly Chat with seller regarding the payment process and can transfer the amount directly to seller. </li>
+               <li className="text-red-500"><strong>Note:</strong> We are not involved in the Buying and Selling process of the Scrap Material , You can directly Chat with seller regarding the payment process and can transfer the amount directly to seller. </li>
             </ul>
          </section>
       </div>
