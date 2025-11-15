@@ -112,7 +112,7 @@ export default function AdUploadPage() {
             key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
             amount: data.order.amount,
             currency: data.order.currency,
-            name: "KabaadiMandi Ad Campaign",
+            name: "KabaadMandi Ad Campaign",
             description: `Ad for ${form.title}`,
             order_id: data.order.id,
             handler: async (response) => {

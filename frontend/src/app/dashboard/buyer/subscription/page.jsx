@@ -46,7 +46,7 @@ export default function BuyerSubscriptionPage() {
             key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
             amount: data.order.amount,
             currency: data.order.currency,
-            name: "KabaadiMandi Buyer Subscription",
+            name: "KabaadMandi Buyer Subscription",
             description: `Subscription Plan - ${planId}`,
             order_id: data.order.id,
             handler: async (response) => {
