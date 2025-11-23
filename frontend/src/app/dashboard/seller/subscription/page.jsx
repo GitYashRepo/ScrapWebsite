@@ -16,10 +16,10 @@ export default function SellerSubscriptionPage() {
 
    // Base subscription plans
    const basePlans = [
-      { id: "seller_monthly", label: "1 Month", price: 2000 },
-      { id: "seller_quarterly", label: "3 Months", price: 5000 },
-      { id: "seller_halfyear", label: "6 Months", price: 7500 },
-      { id: "seller_yearly", label: "1 Year", price: 10000 },
+      // { id: "seller_monthly", label: "1 Month", price: 2000 },
+      { id: "seller_quarterly", label: "3 Months", price: 2000 },
+      { id: "seller_halfyear", label: "6 Months", price: 3000 },
+      { id: "seller_yearly", label: "1 Year", price: 4000 },
    ];
 
    useEffect(() => {

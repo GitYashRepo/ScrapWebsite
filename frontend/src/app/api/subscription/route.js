@@ -11,14 +11,14 @@ export async function POST(req) {
     const { userId, userType, planName, couponCode } = body;
 
     const plans = {
-      seller_monthly: 2000,
-      seller_quarterly: 5000,
-      seller_halfyear: 7500,
-      seller_yearly: 10000,
+      // seller_monthly: 2000,
+      seller_quarterly: 2000,
+      seller_halfyear: 3000,
+      seller_yearly: 4000,
       buyer_monthly: 200,
-      buyer_quarterly: 500,
-      buyer_halfyear: 750,
-      buyer_yearly: 1000,
+      buyer_quarterly: 300,
+      buyer_halfyear: 400,
+      buyer_yearly: 500,
     };
 
     if (!plans[planName]) {
