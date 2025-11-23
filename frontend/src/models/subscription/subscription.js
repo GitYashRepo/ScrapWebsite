@@ -16,7 +16,7 @@ const SubscriptionSchema = new mongoose.Schema(
       type: String,
       required: true,
       enum: [
-        "seller_monthly",
+      //   "seller_monthly",
         "seller_quarterly",
         "seller_halfyear",
         "seller_yearly",
