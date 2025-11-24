@@ -116,7 +116,7 @@ export default function SellerSubscriptionPage() {
          }
 
          const options = {
-            key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+            key: process.env.RAZORPAY_LIVE_KEY_ID,
             amount: data.order.amount,
             currency: data.order.currency,
             name: "KabaadMandi Seller Subscription",
@@ -172,7 +172,7 @@ export default function SellerSubscriptionPage() {
          </div>
 
          {/* Plan Cards */}
-         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {discountedPlans.map((plan, index) => (
                <div
                   key={plan.id}
