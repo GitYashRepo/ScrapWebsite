@@ -43,9 +43,9 @@ export default function BuyerSubscriptionPage() {
 
          // 2️⃣ Initialize Razorpay checkout
          const options = {
-            key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+            key: process.env.RAZORPAY_LIVE_KEY_ID,
             amount: data.order.amount,
-            currency: data.order.currency,
+            currency: "INR",
             name: "KabaadMandi Buyer Subscription",
             description: `Subscription Plan - ${planId}`,
             order_id: data.order.id,

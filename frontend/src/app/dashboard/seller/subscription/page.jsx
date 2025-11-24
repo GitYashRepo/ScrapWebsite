@@ -116,7 +116,7 @@ export default function SellerSubscriptionPage() {
          }
 
          const options = {
-            key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+            key: process.env.RAZORPAY_LIVE_KEY_ID,
             amount: data.order.amount,
             currency: data.order.currency,
             name: "KabaadMandi Seller Subscription",

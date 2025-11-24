@@ -25,7 +25,7 @@ export default function AdUploadPage() {
       durationHours: 1,
    });
 
-   const COST_PER_HOUR = 50;
+   const COST_PER_HOUR = 10;
 
    // Handle image upload
    const handleImageUpload = async (e) => {
@@ -109,7 +109,7 @@ export default function AdUploadPage() {
 
          // Razorpay Checkout
          const options = {
-            key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+            key: process.env.RAZORPAY_LIVE_KEY_ID,
             amount: data.order.amount,
             currency: data.order.currency,
             name: "KabaadMandi Ad Campaign",
