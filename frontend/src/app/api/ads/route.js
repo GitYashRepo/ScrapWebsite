@@ -20,7 +20,7 @@ export async function POST(req) {
       discountPrice,
       offerDetails,
       durationHours,
-      costPerHour = 50,
+      costPerHour = 10,
     } = body;
 
     if (!companyName || !title || !durationHours) {
